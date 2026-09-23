@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Estación de Servicio</title>
+    <link rel="stylesheet" href="Styles.css">
+</head>
+<body>
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-container" class="login-overlay">
+        <div class="login-card">
+            <h2>FuelManager Login</h2>
+            <p>Ingrese su número de cédula y contraseña:</p>
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Número de Cédula:</label>
+                    <input type="text" id="login-cedula" required placeholder="Ej: 79123456">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña:</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Ingresar al Sistema</button>
+            </form>
+            <div style="margin-top: 12px; text-align: right;">
+                <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
+            </div>
+            <div class="login-footer">
+                <p>Copyright © 2026 FuelManager V1</p>
+                <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RECUPERACIÓN / CAMBIO DE CONTRASEÑA -->
+    <div id="modal-recuperacion" class="login-overlay" style="display: none;">
+        <div class="login-card">
+            <h2>Restablecer Contraseña</h2>
+            <p>Valide su identidad con su cédula y fecha de expedición:</p>
+            <form onsubmit="handleCambiarPassword(event)">
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Número de Cédula:</label>
+                    <input type="text" id="rec-cedula" required placeholder="Ej: 79123456">
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Expedición de la Cédula:</label>
+                    <input type="date" id="rec-fecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Contraseña:</label>
+                    <input type="password" id="rec-nuevo-pass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Actualizar Contraseña</button>
+            </form>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="#" onclick="ocultarModalRecuperacion(event)" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">Volver al Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div class="app-container" id="app-main" style="display: none;">
+        <!-- Menú Lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FuelManager</h2>
+            </div>
+            <nav>
+                <a href="#" class="active" onclick="mostrarSeccion('dashboard', event)">📊 Dashboard</a>
+                <a href="#" onclick="mostrarSeccion('ventas', event)">⛽ Ventas Pista</a>
+                <a href="#" onclick="mostrarSeccion('productos', event)">🛒 Productos Tienda</a>
+                <a href="#" onclick="mostrarSeccion('compras', event)">📦 Compras / Abastec.</a>
+                <a href="#" onclick="mostrarSeccion('caja', event)">💵 Caja y Turnos</a>
+                <a href="#" onclick="mostrarSeccion('gastos', event)">💸 Gastos Operativos</a>
+                <a href="#" onclick="mostrarSeccion('clientes', event)">👥 Clientes</a>
+                <a href="#" onclick="mostrarSeccion('usuarios', event)">👥 Gestión de Usuarios</a>
+                <a href="#" onclick="mostrarSeccion('reportes', event)">📈 Reportes & Alertas</a>
+                <a href="#" onclick="mostrarSeccion('inventario', event)">📋 Inv. Combustible</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Copyright © 2026 FuelManager V1</p>
+                <p class="compat-info">Chrome | iOS/Safari | Edge | Firefox</p>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <header class="topbar">
+                <h1 id="titulo-seccion">Dashboard de Combustibles</h1>
+                <div>
+                    <span id="user-info" style="font-weight: 600; margin-right: 15px;">-</span>
+                    <button onclick="cerrarSesion()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Salir</button>
+                </div>
+            </header>
+
+            <!-- SECCIÓN DASHBOARD -->
+            <section id="sec-dashboard" class="seccion active">
+                <div class="filtro-ventas-bar">
+                    <span style="font-weight: 600; font-size: 0.9rem; margin-right: 10px;">📊 Ventas en Dashboard:</span>
+                    <button class="btn-filtro active" onclick="cambiarFiltroDashboard('hoy', event)">Hoy</button>
+                    <button class="btn-filtro" onclick="cambiarFiltroDashboard('ayer', event)">Día Anterior</button>
+                    <button class="btn-filtro" onclick="cambiarFiltroDashboard('semana', event)">Esta Semana</button>
+                    <button class="btn-filtro" onclick="cambiarFiltroDashboard('mes', event)">Este Mes</button>
+                </div>
+
+                <div class="card-grid" style="margin-bottom: 25px;" id="dashboard-ventas-resumen">
+                    <div class="card green">
+                        <h3>Ventas del Período</h3>
+                        <div class="card-body">
+                            <p>Dinero Recaudado: <span id="dash-ventas-dinero">$0</span></p>
+                            <p>Galones Despachados: <span id="dash-ventas-galones">0 Gal</span></p>
+                            <p>Transacciones: <span id="dash-ventas-conteo">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: var(--primary);">Niveles Actuales en Tanques</h3>
+                <div class="card-grid" id="dashboard-cards"></div>
+            </section>
+
+            <!-- SECCIÓN VENTAS -->
+            <section id="sec-ventas" class="seccion">
+                <div class="card form-card">
+                    <h3>Registro de Venta por Surtidor</h3>
+                    <form id="form-venta" onsubmit="handleVenta(event)">
+                        <div class="form-group">
+                            <label>Seleccionar Surtidor / Manguera:</label>
+                            <select id="venta-surtidor" required onchange="actualizarInfoSurtidor()">
+                                <option value="">Cargando surtidores...</option>
+                            </select>
+                        </div>
+                        <div class="form-info-box" id="info-surtidor-box">
+                            <p>Combustible: <span id="info-comb">-</span></p>
+                            <p>Lectura Actual: <span id="info-lectura-actual">-</span></p>
+                            <p>Precio por Galón: $<span id="info-precio">-</span></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Lectura Final del Contador:</label>
+                            <input type="number" step="0.01" id="venta-lectura-final" required placeholder="Ej: 125720">
+                        </div>
+                        <div class="form-group">
+                            <label>Medio de Pago:</label>
+                            <select id="venta-mediopago" required>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta Débito/Crédito</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Observaciones:</label>
+                            <input type="text" id="venta-obs" placeholder="Placa o notas">
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Venta</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECCIÓN PRODUCTOS TIENDA -->
+            <section id="sec-productos" class="seccion">
+                <div class="card">
+                    <h3>Inventario de Productos de Tienda</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-productos">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio Venta</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mín.</th>
+                                    <th>Ubicación</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN COMPRAS -->
+            <section id="sec-compras" class="seccion">
+                <div class="card form-card">
+                    <h3>Generar Orden de Compra / Abastecimiento</h3>
+                    <form id="form-compra" onsubmit="handleCompra(event)">
+                        <div class="form-group">
+                            <label>Proveedor:</label>
+                            <select id="compra-proveedor" required>
+                                <option value="">Cargando proveedores...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Ítem a Pedir:</label>
+                            <select id="compra-tipo-item" required onchange="actualizarItemsCompraSelect()">
+                                <option value="COMBUSTIBLE">Combustible</option>
+                                <option value="PRODUCTO">Producto de Tienda</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Seleccionar Ítem:</label>
+                            <select id="compra-item" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad a Pedir:</label>
+                            <input type="number" step="0.01" id="compra-cantidad" required placeholder="Ej: 1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Precio Unitario de Compra ($):</label>
+                            <input type="number" step="0.01" id="compra-precio" required placeholder="Ej: 3800">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Esperada de Llegada:</label>
+                            <input type="date" id="compra-fecha" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Compra y Actualizar Stock</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECCIÓN CAJA -->
+            <section id="sec-caja" class="seccion">
+                <div class="card form-card">
+                    <h3>Control de Caja y Turnos</h3>
+                    <div id="caja-estado-container" style="margin-bottom: 20px;">
+                        <p>Estado actual: <b id="lbl-estado-caja">Cargando...</b></p>
+                    </div>
+                    <div id="div-abrir-caja" style="display:none;">
+                        <form onsubmit="handleAbrirCaja(event)">
+                            <div class="form-group">
+                                <label>Base Inicial en Efectivo ($):</label>
+                                <input type="number" step="0.01" id="caja-base" required placeholder="Ej: 200000">
+                            </div>
+                            <button type="submit" class="btn-primary">Abrir Caja / Iniciar Turno</button>
+                        </form>
+                    </div>
+                    <div id="div-cerrar-caja" style="display:none;">
+                        <form onsubmit="handleCerrarCaja(event)">
+                            <div class="form-group">
+                                <label>Total Efectivo Real en Caja ($):</label>
+                                <input type="number" step="0.01" id="caja-real" required placeholder="Ej: 1500000">
+                            </div>
+                            <button type="submit" class="btn-primary" style="background: var(--red);">Cerrar Caja y Calcular Arqueo</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN GASTOS -->
+            <section id="sec-gastos" class="seccion">
+                <div class="card form-card">
+                    <h3>Registrar Gasto Operativo</h3>
+                    <form id="form-gasto" onsubmit="handleGasto(event)">
+                        <div class="form-group">
+                            <label>Categoría:</label>
+                            <select id="gasto-categoria" required>
+                                <option value="Servicios Públicos">Servicios Públicos</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Nomina">Nómina / Personal</option>
+                                <option value="Insumos">Insumos y Papelería</option>
+                                <option value="Otros">Otros Gastos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción:</label>
+                            <input type="text" id="gasto-desc" required placeholder="Ej: Pago de energía">
+                        </div>
+                        <div class="form-group">
+                            <label>Valor ($):</label>
+                            <input type="number" step="0.01" id="gasto-valor" required placeholder="Ej: 450000">
+                        </div>
+                        <div class="form-group">
+                            <label>Forma de Pago:</label>
+                            <select id="gasto-pago" required>
+                                <option value="Efectivo">Efectivo (Sale de Caja)</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Responsable:</label>
+                            <input type="text" id="gasto-resp" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Soporte:</label>
+                            <input type="text" id="gasto-soporte" placeholder="Factura o Recibo">
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Gasto</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECCIÓN CLIENTES -->
+            <section id="sec-clientes" class="seccion">
+                <div class="card">
+                    <h3>Directorio de Clientes</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-clientes">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>NIT / CC</th>
+                                    <th>Teléfono</th>
+                                    <th>Email</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN GESTIÓN DE USUARIOS -->
+            <section id="sec-usuarios" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nuevo Usuario</h3>
+                    <form id="form-nuevo-usuario" onsubmit="handleCrearUsuario(event)">
+                        <div class="form-group">
+                            <label>Nombre Completo:</label>
+                            <input type="text" id="nuevo-nombre" required placeholder="Ej: Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Cédula:</label>
+                            <input type="text" id="nuevo-cedula" required placeholder="Ej: 10203040">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña Temporal:</label>
+                            <input type="password" id="nuevo-pass" required placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Expedición de la Cédula:</label>
+                            <input type="date" id="nuevo-fecha-exp" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Rol en el Sistema:</label>
+                            <select id="nuevo-rol" required>
+                                <option value="Administrador">Administrador</option>
+                                <option value="Gerente">Gerente</option>
+                                <option value="Operador">Operador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Crear Usuario</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Usuarios Registrados en el Sistema</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-usuarios">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN REPORTES Y ALERTAS -->
+            <section id="sec-reportes" class="seccion">
+                <div class="card-grid" style="margin-bottom: 25px;">
+                    <div class="card green">
+                        <h3>Ventas Totales</h3>
+                        <div class="card-body">
+                            <p>Dinero Recaudado: <span id="rep-ventas-dinero">$0</span></p>
+                            <p>Galones Despachados: <span id="rep-ventas-galones">0 Gal</span></p>
+                            <p>Transacciones: <span id="rep-ventas-conteo">0</span></p>
+                        </div>
+                    </div>
+                    <div class="card red">
+                        <h3>Gastos & Compras</h3>
+                        <div class="card-body">
+                            <p>Total Gastos: <span id="rep-gastos">$0</span></p>
+                            <p>Total Compras: <span id="rep-compras">$0</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Alertas Activas del Sistema</h3>
+                    <div id="lista-alertas-container" style="margin-top: 15px;">
+                        <p>Cargando alertas...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN INVENTARIO COMBUSTIBLE -->
+            <section id="sec-inventario" class="seccion">
+                <div class="card form-card">
+                    <h3>Movimiento Extraordinario Combustible</h3>
+                    <form id="form-movimiento" onsubmit="handleMovimiento(event)">
+                        <div class="form-group">
+                            <label>Combustible:</label>
+                            <select id="mov-combustible" required>
+                                <option value="C001">ACPM</option>
+                                <option value="C002">Gasolina Corriente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Movimiento:</label>
+                            <select id="mov-tipo" required>
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="SALIDA">Salida</option>
+                                <option value="AJUSTE">Ajuste Físico</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad:</label>
+                            <input type="number" step="0.01" id="mov-cantidad" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Observaciones:</label>
+                            <input type="text" id="mov-obs">
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
