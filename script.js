@@ -1,5 +1,5 @@
 // IMPORTANTE: Reemplaza esta URL con la URL de tu Aplicación Web de Google Apps Script que termina en /exec
-const API_URL = "https://script.google.com/macros/s/TU_URL_DE_APPS_SCRIPT_AQUI/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxMXozuTuCtNFig7BxRbjgmnAkn-DjgG9RUIN3Y2-uCK73Um9vixi04ySKWUFsqaHwe/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
