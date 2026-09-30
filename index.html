@@ -22,7 +22,7 @@
             <form id="form-login" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-top: 15px;">
                     <label>Número de Cédula:</label>
-                    <input type="text" id="login-cedula" required placeholder="Ej: 79123456">
+                    <input type="text" id="login-cedula" required placeholder="Ingrese su cédula">
                 </div>
                 <div class="form-group">
                     <label>Contraseña:</label>
@@ -34,7 +34,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V1800</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V10</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -48,7 +48,7 @@
             <form onsubmit="handleCambiarPassword(event)">
                 <div class="form-group" style="margin-top: 15px;">
                     <label>Número de Cédula:</label>
-                    <input type="text" id="rec-cedula" required placeholder="Ej: 79123456">
+                    <input type="text" id="rec-cedula" required placeholder="Ingrese su cédula">
                 </div>
                 <div class="form-group">
                     <label>Fecha de Expedición de la Cédula:</label>
@@ -96,14 +96,10 @@
         <main class="main-content">
             <header class="topbar">
                 <h1 id="titulo-seccion">Dashboard de Combustibles</h1>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span id="user-info" style="font-weight: 600;">-</span>
-                    <!-- Botón de actualizar más grande -->
-                    <button onclick="sincronizarDatosGlobales()" title="Actualizar datos desde la nube" class="btn-refrescar-discreto">
-                        🔄
-                    </button>
-                    <!-- Botón salir ubicado arriba al final -->
-                    <button onclick="cerrarSesion()" style="background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Salir</button>
+                <div class="topbar-user-area">
+                    <span id="user-info">-</span>
+                    <button onclick="sincronizarDatosGlobales()" title="Actualizar datos desde la nube" class="btn-refrescar-discreto">🔄</button>
+                    <button onclick="cerrarSesion()" class="btn-salir-topbar">Salir</button>
                 </div>
             </header>
 
@@ -374,7 +370,7 @@
                         </div>
                         <div class="form-group">
                             <label>Número de Cédula:</label>
-                            <input type="text" id="nuevo-cedula" required placeholder="Ej: 10203040">
+                            <input type="text" id="nuevo-cedula" required placeholder="Ingrese su cédula">
                         </div>
                         <div class="form-group">
                             <label>Contraseña Temporal:</label>
