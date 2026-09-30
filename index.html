@@ -35,7 +35,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V.1722</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V10</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -87,7 +87,7 @@
                 <a href="#" onclick="mostrarSeccion('inventario', event)">📋 Inv. Combustible</a>
             </nav>
             <div class="sidebar-footer">
-                <p>Copyright © 2026 FuelManager V1</p>
+                <p>Copyright © 2026 FuelManager V10</p>
                 <p class="compat-info">Chrome | iOS/Safari | Edge | Firefox</p>
             </div>
         </aside>
@@ -96,8 +96,12 @@
         <main class="main-content">
             <header class="topbar">
                 <h1 id="titulo-seccion">Dashboard de Combustibles</h1>
-                <div>
-                    <span id="user-info" style="font-weight: 600; margin-right: 15px;">-</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="user-info" style="font-weight: 600; margin-right: 5px;">-</span>
+                    <!-- Botón discreto de actualizar datos -->
+                    <button onclick="sincronizarDatosGlobales()" title="Actualizar datos desde la nube" class="btn-refrescar-discreto">
+                        🔄
+                    </button>
                     <button onclick="cerrarSesion()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Salir</button>
                 </div>
             </header>
