@@ -43,6 +43,18 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     }, 4000);
 }
 
+function sincronizarDatosGlobales() {
+    mostrarNotificacion("Actualizando datos desde la nube...", "success");
+    cargarDashboard();
+    cargarSurtidoresSelect();
+    cargarProductosTabla();
+    cargarCatalogosCompra();
+    verificarEstadoCaja();
+    cargarClientesTabla();
+    cargarUsuariosTabla();
+    cargarReportesyAlertas();
+}
+
 async function handleLogin(event) {
     event.preventDefault();
     let cedula = document.getElementById('login-cedula').value;
@@ -59,15 +71,7 @@ async function handleLogin(event) {
         document.getElementById('form-login').reset();
 
         mostrarNotificacion(`Bienvenido al sistema, ${user.nombre}`, 'success');
-
-        cargarDashboard();
-        cargarSurtidoresSelect();
-        cargarProductosTabla();
-        cargarCatalogosCompra();
-        verificarEstadoCaja();
-        cargarClientesTabla();
-        cargarUsuariosTabla();
-        cargarReportesyAlertas();
+        sincronizarDatosGlobales();
     } catch (err) {
         let mensajeLimpio = err.message.replace(/^Error:\s*/i, '');
         mostrarNotificacion(mensajeLimpio, 'error');
@@ -178,6 +182,18 @@ async function cargarDashboard() {
         res.combustibles.forEach(c => {
             let color = c.colorEstado;
             let capMax = Number(c.CapacidadMaxima) || 5000;
+            
+            // Regla para mostrar la cantidad sugerida en rojo si supera el mínimo especificado
+            let esCorriente = c.Nombre.toLowerCase().includes('corriente');
+            let esAcpm = c.Nombre.toLowerCase().includes('acpm');
+            let cantidadSugeridaNum = Number(c.cantidadSugerida) || 0;
+            let alertaRoja = false;
+
+            if (esCorriente && cantidadSugeridaNum >= 4300) alertaRoja = true;
+            if (esAcpm && cantidadSugeridaNum >= 1100) alertaRoja = true;
+
+            let estiloSugerida = alertaRoja ? 'color: var(--red); font-weight: bold;' : 'color: var(--accent);';
+
             let html = `
                 <div class="card ${color} tanque-card">
                     <h3>${c.Nombre} <span class="badge ${color}">${c.estadoAlerta}</span></h3>
@@ -194,7 +210,7 @@ async function cargarDashboard() {
                     <div class="card-body" style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
                         <p>Consumo Diario Est.: <span>${c.consumoDiarioEstimado} ${c.Unidad}</span></p>
                         <p>Stock Mínimo / Seg.: <span>${c.StockMinimo} / ${c.StockSeguridad}</span></p>
-                        <p>Cantidad Sugerida Pedido: <span style="color: var(--accent);">${c.cantidadSugerida} ${c.Unidad}</span></p>
+                        <p>Cantidad Sugerida Pedido: <span style="${estiloSugerida}">${c.cantidadSugerida} ${c.Unidad}</span></p>
                     </div>
                 </div>
             `;
