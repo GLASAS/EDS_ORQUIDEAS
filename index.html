@@ -22,7 +22,7 @@
             <form id="form-login" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-top: 15px;">
                     <label>Número de Cédula:</label>
-                    <input type="text" id="login-cedula" required placeholder="Ej: 79123456">
+                    <input type="text" id="login-cedula" required placeholder="Ingrese la Cedula">
                 </div>
                 <div class="form-group">
                     <label>Contraseña:</label>
@@ -34,7 +34,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V1748</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V1752</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -76,6 +76,7 @@
             <nav>
                 <a href="#" class="active" onclick="mostrarSeccion('dashboard', event)">📊 Dashboard</a>
                 <a href="#" onclick="mostrarSeccion('ventas', event)">⛽ Ventas Pista</a>
+                <a href="#" onclick="mostrarSeccion('precios', event)">💲 Precios Combustible</a>
                 <a href="#" onclick="mostrarSeccion('productos', event)">🛒 Productos Tienda</a>
                 <a href="#" onclick="mostrarSeccion('compras', event)">📦 Compras / Abastec.</a>
                 <a href="#" onclick="mostrarSeccion('caja', event)">💵 Caja y Turnos</a>
@@ -144,12 +145,14 @@
                         </div>
                         <div class="form-info-box" id="info-surtidor-box">
                             <p>Combustible: <span id="info-comb">-</span></p>
-                            <p>Lectura Actual: <span id="info-lectura-actual">-</span></p>
-                            <p>Precio por Galón: $<span id="info-precio">-</span></p>
+                            <p>Precio por Galón Actual: $<span id="info-precio">-</span></p>
                         </div>
                         <div class="form-group">
-                            <label>Lectura Final del Contador:</label>
-                            <input type="number" step="0.01" id="venta-lectura-final" required placeholder="Ej: 125720">
+                            <label>Cantidad de Galones Vendidos (Ej: 2.35):</label>
+                            <input type="number" step="0.01" id="venta-galones" required placeholder="Ej: 2.35" oninput="calcularTotalVentaPreview()">
+                        </div>
+                        <div class="form-info-box" style="background: #e2e8f0; border-left-color: var(--green);">
+                            <p>Total a Pagar Estimado: <span id="info-total-preview" style="font-size: 1.1rem; color: var(--green);">$0</span></p>
                         </div>
                         <div class="form-group">
                             <label>Medio de Pago:</label>
@@ -165,6 +168,44 @@
                         </div>
                         <button type="submit" class="btn-primary">Registrar Venta</button>
                     </form>
+                </div>
+            </section>
+
+            <!-- SECCIÓN PRECIOS COMBUSTIBLE -->
+            <section id="sec-precios" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Actualizar Precios de Combustibles</h3>
+                    <form id="form-actualizar-precio" onsubmit="handleActualizarPrecio(event)">
+                        <div class="form-group">
+                            <label>Seleccionar Combustible:</label>
+                            <select id="precio-combustible-id" required onchange="actualizarInputPrecioActual()">
+                                <option value="C001">ACPM</option>
+                                <option value="C002">Gasolina Corriente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nuevo Precio por Galón ($):</label>
+                            <input type="number" step="0.01" id="precio-nuevo-valor" required placeholder="Ej: 14200">
+                        </div>
+                        <button type="submit" class="btn-primary">Actualizar Precio y Registrar Auditoría</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Historial de Cambios de Precios (Auditoría)</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-historial-precios">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y Hora</th>
+                                    <th>Combustible</th>
+                                    <th>Precio Anterior</th>
+                                    <th>Nuevo Precio</th>
+                                    <th>Usuario Responsable</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
