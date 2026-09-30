@@ -130,38 +130,38 @@ function mostrarSeccion(seccionId, event) {
         cargarSurtidoresSelect();
     } else if (seccionId === 'precios') {
         document.getElementById('sec-precios').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Actualización de Precios de Combustible";
+        document.getElementById('titulo-seccion').innerText = "Actualización de Precios";
         cargarHistorialPrecios();
     } else if (seccionId === 'productos') {
         document.getElementById('sec-productos').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Inventario de Productos de Tienda";
+        document.getElementById('titulo-seccion').innerText = "Inventario de Productos";
         cargarProductosTabla();
     } else if (seccionId === 'compras') {
         document.getElementById('sec-compras').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Órdenes de Compra y Abastecimiento";
+        document.getElementById('titulo-seccion').innerText = "Órdenes de Compra";
         cargarCatalogosCompra();
     } else if (seccionId === 'caja') {
         document.getElementById('sec-caja').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Control de Caja y Turnos";
+        document.getElementById('titulo-seccion').innerText = "Control de Caja";
         verificarEstadoCaja();
     } else if (seccionId === 'gastos') {
         document.getElementById('sec-gastos').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Registro de Gastos Operativos";
+        document.getElementById('titulo-seccion').innerText = "Gastos Operativos";
     } else if (seccionId === 'clientes') {
         document.getElementById('sec-clientes').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Directorio de Clientes";
+        document.getElementById('titulo-seccion').innerText = "Directorio Clientes";
         cargarClientesTabla();
     } else if (seccionId === 'usuarios') {
         document.getElementById('sec-usuarios').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Gestión de Usuarios del Sistema";
+        document.getElementById('titulo-seccion').innerText = "Gestión de Usuarios";
         cargarUsuariosTabla();
     } else if (seccionId === 'reportes') {
         document.getElementById('sec-reportes').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Reportes Financieros y Alertas";
+        document.getElementById('titulo-seccion').innerText = "Reportes & Alertas";
         cargarReportesyAlertas();
     } else if (seccionId === 'inventario') {
         document.getElementById('sec-inventario').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Control de Inventario Combustible";
+        document.getElementById('titulo-seccion').innerText = "Inv. Combustible";
     }
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
 }
