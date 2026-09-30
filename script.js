@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwkXzt7rs4NmGk4kkI-fPimQWh-qhal3dw6z4tUgKBZJnT2tMsfaay6EddpkLzN4dsD/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwBp11eVd2hRMTk3pk9s2IDUHA97BySt69IbLCayAv_eHgPArRqwR3QVr30fY9uw_At/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -53,6 +53,7 @@ function sincronizarDatosGlobales() {
     cargarClientesTabla();
     cargarUsuariosTabla();
     cargarReportesyAlertas();
+    cargarHistorialPrecios();
 }
 
 async function handleLogin(event) {
@@ -127,6 +128,10 @@ function mostrarSeccion(seccionId, event) {
         document.getElementById('sec-ventas').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Registro de Ventas en Pista";
         cargarSurtidoresSelect();
+    } else if (seccionId === 'precios') {
+        document.getElementById('sec-precios').classList.add('active');
+        document.getElementById('titulo-seccion').innerText = "Actualización de Precios de Combustible";
+        cargarHistorialPrecios();
     } else if (seccionId === 'productos') {
         document.getElementById('sec-productos').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Inventario de Productos de Tienda";
@@ -183,7 +188,6 @@ async function cargarDashboard() {
             let color = c.colorEstado;
             let capMax = Number(c.CapacidadMaxima) || 5000;
             
-            // Regla para mostrar la cantidad sugerida en rojo si supera el mínimo especificado
             let esCorriente = c.Nombre.toLowerCase().includes('corriente');
             let esAcpm = c.Nombre.toLowerCase().includes('acpm');
             let cantidadSugeridaNum = Number(c.cantidadSugerida) || 0;
@@ -241,27 +245,80 @@ function actualizarInfoSurtidor() {
     let surt = surtidoresGlobal.find(s => s.ID === idSeleccionado);
     if (surt) {
         document.getElementById('info-comb').innerText = surt.CombustibleNombre;
-        document.getElementById('info-lectura-actual').innerText = surt.LecturaActual;
         document.getElementById('info-precio').innerText = surt.PrecioVenta;
-        document.getElementById('venta-lectura-final').min = surt.LecturaActual;
+        calcularTotalVentaPreview();
+    }
+}
+
+function calcularTotalVentaPreview() {
+    let idSeleccionado = document.getElementById('venta-surtidor').value;
+    let surt = surtidoresGlobal.find(s => s.ID === idSeleccionado);
+    let galones = parseFloat(document.getElementById('venta-galones').value) || 0;
+    
+    if (surt) {
+        let total = galones * Number(surt.PrecioVenta);
+        document.getElementById('info-total-preview').innerText = "$" + total.toLocaleString();
     }
 }
 
 async function handleVenta(event) {
     event.preventDefault();
     let surtID = document.getElementById('venta-surtidor').value;
-    let lecturaFinal = document.getElementById('venta-lectura-final').value;
+    let galones = document.getElementById('venta-galones').value;
     let medioPago = document.getElementById('venta-mediopago').value;
     let obs = document.getElementById('venta-obs').value;
     let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
 
     try {
-        let res = await ejecutarAPI({ accion: 'registrarVenta', surtidorID, lecturaFinal, medioPago, usuario: nombreUsuario, observaciones: obs });
-        mostrarNotificacion(`Venta registrada con éxito. Galones: ${res.cantidadGalones.toFixed(2)} - Total: $${res.totalVenta.toLocaleString()}`, 'success');
+        let res = await ejecutarAPI({ accion: 'registrarVentaPorGalones', surtidorID: surtID, cantidadGalones: galones, medioPago, usuario: nombreUsuario, observaciones: obs });
+        mostrarNotificacion(`Venta registrada. Galones: ${res.cantidadGalones.toFixed(2)} - Total: $${res.totalVenta.toLocaleString()}`, 'success');
         document.getElementById('form-venta').reset();
+        document.getElementById('info-total-preview').innerText = "$0";
         mostrarSeccion('dashboard');
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
+    }
+}
+
+async function handleActualizarPrecio(event) {
+    event.preventDefault();
+    let combustibleID = document.getElementById('precio-combustible-id').value;
+    let nuevoPrecio = document.getElementById('precio-nuevo-valor').value;
+    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
+
+    try {
+        let res = await ejecutarAPI({ accion: 'actualizarPrecioCombustible', combustibleID, nuevoPrecio, usuario: nombreUsuario });
+        mostrarNotificacion(res.mensaje, 'success');
+        document.getElementById('form-actualizar-precio').reset();
+        cargarHistorialPrecios();
+        sincronizarDatosGlobales();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
+async function cargarHistorialPrecios() {
+    try {
+        let historial = await ejecutarAPI({ accion: 'obtenerHistorialPrecios' });
+        let tbody = document.querySelector('#tabla-historial-precios tbody');
+        tbody.innerHTML = "";
+        if (!historial || historial.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No hay registros de cambios de precios.</td></tr>";
+            return;
+        }
+        historial.forEach(h => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${h.fechaHora}</td>
+                    <td><b>${h.combustibleNombre}</b></td>
+                    <td>$${Number(h.precioAnterior).toLocaleString()}</td>
+                    <td><b style="color: var(--accent);">$${Number(h.precioNuevo).toLocaleString()}</b></td>
+                    <td>${h.usuario}</td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error(err);
     }
 }
 
