@@ -24,17 +24,16 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 .sidebar-footer { padding: 15px; border-top: 1px solid #334155; text-align: center; font-size: 0.75rem; color: #94a3b8; }
 .compat-info { margin-top: 4px; font-size: 0.65rem; color: #64748b; }
 
-/* Main */
+/* Main & Topbar */
 .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-.topbar { background: var(--card-bg); padding: 12px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-.topbar h1 { font-size: 1.1rem; color: var(--primary); }
+.topbar { background: var(--card-bg); padding: 12px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.topbar h1 { font-size: 1.2rem; color: var(--primary); }
 
-.topbar-user-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-#user-info { font-size: 0.85rem; font-weight: 600; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Grupo derecho alineado en una sola línea al final */
+.topbar-right-group { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto; }
+#user-info { font-size: 0.85rem; font-weight: 600; color: var(--primary); }
 
-.btn-salir-topbar { background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-
-/* Botón de Actualizar */
+/* Botón Refrescar */
 .btn-refrescar-discreto {
     background: #f1f5f9;
     border: 1px solid #cbd5e1;
@@ -52,6 +51,21 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 .btn-refrescar-discreto:hover {
     background: #e2e8f0;
     transform: rotate(45deg);
+}
+
+/* Botón Salir al final de la línea */
+.btn-salir-header {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.btn-salir-header:hover {
+    opacity: 0.9;
 }
 
 .seccion { display: none; padding: 30px; }
@@ -98,7 +112,7 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 .login-card p { color: var(--text-main); font-size: 0.9rem; margin-bottom: 20px; }
 .login-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; }
 
-/* Notificaciones Toast Profesionales */
+/* Notificaciones Toast */
 #toast-container { position: fixed; top: 20px; right: 20px; z-index: 100000; display: flex; flex-direction: column; gap: 10px; max-width: 380px; }
 .toast { background: white; padding: 16px 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; border-left: 5px solid var(--accent); animation: slideIn 0.3s ease; font-size: 0.9rem; color: var(--primary); }
 .toast.success { border-left-color: var(--green); }
