@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FuelManager - Gestión Estación de Servicio</title>
     
-    <!-- Configuración de Íconos para dispositivos móviles y pantalla de inicio -->
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,7 +22,7 @@
             <form id="form-login" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-top: 15px;">
                     <label>Número de Cédula:</label>
-                    <input type="text" id="login-cedula" required placeholder="Ingrese Doc">
+                    <input type="text" id="login-cedula" required placeholder="Ej: 79123456">
                 </div>
                 <div class="form-group">
                     <label>Contraseña:</label>
@@ -35,7 +34,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V1740</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V10</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -96,13 +95,14 @@
         <main class="main-content">
             <header class="topbar">
                 <h1 id="titulo-seccion">Dashboard de Combustibles</h1>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span id="user-info" style="font-weight: 600; margin-right: 5px;">-</span>
-                    <!-- Botón discreto de actualizar datos -->
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span id="user-info" style="font-weight: 600;">-</span>
+                    <!-- Botón de actualizar más grande -->
                     <button onclick="sincronizarDatosGlobales()" title="Actualizar datos desde la nube" class="btn-refrescar-discreto">
                         🔄
                     </button>
-                    <button onclick="cerrarSesion()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Salir</button>
+                    <!-- Botón salir ubicado arriba al final -->
+                    <button onclick="cerrarSesion()" style="background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">Salir</button>
                 </div>
             </header>
 
