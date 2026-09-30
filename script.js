@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwBp11eVd2hRMTk3pk9s2IDUHA97BySt69IbLCayAv_eHgPArRqwR3QVr30fY9uw_At/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwAs1sC7qEoTgU563KshYGp1oNe06SHD2UzWObKIeubt2aVmDgLLngoug0YGAZbQP_n/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
