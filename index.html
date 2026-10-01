@@ -40,7 +40,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V10</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V.830</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -87,7 +87,9 @@
                 <a href="#" onclick="mostrarSeccion('compras', event)">📦 Compras / Abastec.</a>
                 <a href="#" onclick="mostrarSeccion('caja', event)">💵 Caja y Turnos</a>
                 <a href="#" onclick="mostrarSeccion('gastos', event)">💸 Gastos Operativos</a>
+                <a href="#" onclick="mostrarSeccion('cuentas-pagar', event)">💳 Cuentas por Pagar</a>
                 <a href="#" onclick="mostrarSeccion('clientes', event)">👥 Clientes</a>
+                <a href="#" onclick="mostrarSeccion('proveedores', event)">🏢 Proveedores</a>
                 <a href="#" onclick="mostrarSeccion('usuarios', event)">👥 Gestión de Usuarios</a>
                 <a href="#" onclick="mostrarSeccion('reportes', event)">📈 Reportes & Alertas</a>
                 <a href="#" onclick="mostrarSeccion('inventario', event)">📋 Inv. Combustible</a>
@@ -363,8 +365,71 @@
                 </div>
             </section>
 
+            <!-- SECCIÓN CUENTAS POR PAGAR (NUEVO) -->
+            <section id="sec-cuentas-pagar" class="seccion">
+                <div id="alertas-cuentas-container" style="margin-bottom: 25px;"></div>
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nueva Cuenta por Pagar / Servicio</h3>
+                    <form id="form-cxp" onsubmit="handleRegistrarCuenta(event)">
+                        <div class="form-group">
+                            <label>Tercero / Proveedor (Ej: Enel / Codensa):</label>
+                            <input type="text" id="cxp-tercero" required placeholder="Nombre de la empresa o persona">
+                        </div>
+                        <div class="form-group">
+                            <label>Concepto (Ej: Recibo de luz mes de octubre):</label>
+                            <input type="text" id="cxp-concepto" required placeholder="Descripción de la obligación">
+                        </div>
+                        <div class="form-group">
+                            <label>Valor a Pagar ($):</label>
+                            <input type="number" step="0.01" id="cxp-valor" required placeholder="Ej: 350000">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Límite de Pago:</label>
+                            <input type="date" id="cxp-fecha" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Cuenta por Pagar</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Listado de Obligaciones Pendientes</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-cuentas-pagar">
+                            <thead>
+                                <tr>
+                                    <th>Tercero</th>
+                                    <th>Concepto</th>
+                                    <th>Valor</th>
+                                    <th>Fecha Límite</th>
+                                    <th>Días Restantes</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- SECCIÓN CLIENTES -->
             <section id="sec-clientes" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nuevo Cliente</h3>
+                    <form id="form-cliente" onsubmit="handleRegistrarCliente(event)">
+                        <div class="form-group"><label>Nombre Completo / Razón Social:</label><input type="text" id="cli-nombre" required placeholder="Ej: Transportes S.A."></div>
+                        <div class="form-group"><label>NIT o Cédula:</label><input type="text" id="cli-nit" required placeholder="Ej: 900123456-1"></div>
+                        <div class="form-group"><label>Teléfono:</label><input type="text" id="cli-tel" required placeholder="Ej: 3101234567"></div>
+                        <div class="form-group"><label>Correo Electrónico:</label><input type="email" id="cli-email" required placeholder="correo@cliente.com"></div>
+                        <div class="form-group"><label>Tipo de Cliente:</label>
+                            <select id="cli-tipo" required>
+                                <option value="General">General</option>
+                                <option value="Corporativo">Corporativo / Crédito</option>
+                                <option value="Frecuente">Frecuente</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar Cliente</button>
+                    </form>
+                </div>
                 <div class="card">
                     <h3>Directorio de Clientes</h3>
                     <div style="overflow-x: auto; margin-top: 15px;">
@@ -376,6 +441,39 @@
                                     <th>Teléfono</th>
                                     <th>Email</th>
                                     <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN PROVEEDORES (NUEVO) -->
+            <section id="sec-proveedores" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nuevo Proveedor</h3>
+                    <form id="form-proveedor" onsubmit="handleRegistrarProveedor(event)">
+                        <div class="form-group"><label>Nombre del Proveedor:</label><input type="text" id="prov-nombre" required placeholder="Ej: Global Petroleum"></div>
+                        <div class="form-group"><label>NIT:</label><input type="text" id="prov-nit" required placeholder="Ej: 900987654-2"></div>
+                        <div class="form-group"><label>Persona de Contacto:</label><input type="text" id="prov-contacto" required placeholder="Nombre del asesor"></div>
+                        <div class="form-group"><label>Teléfono:</label><input type="text" id="prov-tel" required placeholder="Teléfono de contacto"></div>
+                        <div class="form-group"><label>Email:</label><input type="email" id="prov-email" required placeholder="ventas@proveedor.com"></div>
+                        <div class="form-group"><label>Dirección:</label><input type="text" id="prov-dir" required placeholder="Dirección física"></div>
+                        <button type="submit" class="btn-primary">Guardar Proveedor</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Directorio de Proveedores</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-proveedores">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>NIT</th>
+                                    <th>Teléfono</th>
+                                    <th>Email</th>
+                                    <th>Dirección</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
