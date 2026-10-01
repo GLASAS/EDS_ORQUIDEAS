@@ -14,12 +14,60 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 
 .app-container { display: flex; height: 100vh; overflow: hidden; }
 
+/* Barra de carga superior deslizante */
+.loading-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background-color: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 99999;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: slideDown 0.3s ease;
+}
+
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
 /* Sidebar */
 .sidebar { width: 260px; background-color: var(--primary); color: white; display: flex; flex-direction: column; justify-content: space-between; }
 .sidebar-header h2 { padding: 20px; font-size: 1.25rem; border-bottom: 1px solid #334155; }
 .sidebar nav { padding: 15px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
 .sidebar nav a { color: #94a3b8; text-decoration: none; padding: 10px 15px; border-radius: 8px; transition: 0.2s; font-size: 0.9rem; }
 .sidebar nav a:hover, .sidebar nav a.active { background-color: var(--accent); color: white; }
+
+.btn-salir-modulo {
+    margin-top: 15px;
+    background-color: #ef4444 !important;
+    color: white !important;
+    font-weight: 600;
+}
+.btn-salir-modulo:hover {
+    background-color: #dc2626 !important;
+}
 
 .sidebar-footer { padding: 15px; border-top: 1px solid #334155; text-align: center; font-size: 0.75rem; color: #94a3b8; }
 .compat-info { margin-top: 4px; font-size: 0.65rem; color: #64748b; }
@@ -50,18 +98,6 @@ body { background-color: var(--bg-color); color: var(--text-main); }
     background: #e2e8f0;
     transform: rotate(45deg);
 }
-
-.btn-salir-header {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-.btn-salir-header:hover { opacity: 0.9; }
 
 .seccion { display: none; padding: 30px; }
 .seccion.active { display: block; }
