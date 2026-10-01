@@ -40,7 +40,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <h2><p>EDS ORQUIDEAS <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1140</span></p><h2>
+                <p>EDS ORQUIDEAS <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1140</span></p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -82,9 +82,10 @@
             <nav>
                 <a href="#" class="active" onclick="mostrarSeccion('dashboard', event)">📊 Dashboard</a>
                 <a href="#" onclick="mostrarSeccion('ventas', event)">⛽ Ventas Pista</a>
+                <a href="#" onclick="mostrarSeccion('ventas-tienda', event)">🛒 Vender en Tienda</a>
                 <a href="#" onclick="mostrarSeccion('precios', event)">💲 Precios Combustible</a>
-                <a href="#" onclick="mostrarSeccion('productos', event)">🛒 Productos Tienda</a>
-                <a href="#" onclick="mostrarSeccion('compras', event)">📦 Compras / Abastec.</a>
+                <a href="#" onclick="mostrarSeccion('productos', event)">📦 Inventario Tienda</a>
+                <a href="#" onclick="mostrarSeccion('compras', event)">📥 Compras / Abastec.</a>
                 <a href="#" onclick="mostrarSeccion('caja', event)">💵 Caja y Turnos</a>
                 <a href="#" onclick="mostrarSeccion('gastos', event)">💸 Gastos Operativos</a>
                 <a href="#" onclick="mostrarSeccion('cuentas-pagar', event)">💳 Cuentas por Pagar</a>
@@ -139,7 +140,7 @@
                 <div class="card-grid" id="dashboard-cards"></div>
             </section>
 
-            <!-- SECCIÓN VENTAS -->
+            <!-- SECCIÓN VENTAS PISTA -->
             <section id="sec-ventas" class="seccion">
                 <div class="card form-card">
                     <h3>Registro de Venta por Surtidor</h3>
@@ -175,6 +176,44 @@
                             <input type="text" id="venta-obs" placeholder="Placa o notas">
                         </div>
                         <button type="submit" class="btn-primary">Registrar Venta</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECCIÓN VENDER PRODUCTOS DE TIENDA (NUEVO) -->
+            <section id="sec-ventas-tienda" class="seccion">
+                <div class="card form-card">
+                    <h3>🛒 Registrar Venta de Producto de Tienda</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">
+                        Seleccione el artículo, ingrese la cantidad y el sistema descontará del inventario y sumará el recaudo.
+                    </p>
+                    <form id="form-venta-tienda" onsubmit="handleVentaTienda(event)">
+                        <div class="form-group">
+                            <label>Seleccionar Producto:</label>
+                            <select id="vt-producto" required onchange="actualizarInfoProductoTienda()">
+                                <option value="">Cargando productos...</option>
+                            </select>
+                        </div>
+                        <div class="form-info-box" id="info-producto-box">
+                            <p>Stock Disponible: <span id="vt-stock-disp">-</span></p>
+                            <p>Precio Unitario: $<span id="vt-precio-unit">-</span></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad a Vender:</label>
+                            <input type="number" step="1" min="1" id="vt-cantidad" required placeholder="Ej: 2" oninput="calcularTotalTiendaPreview()">
+                        </div>
+                        <div class="form-info-box" style="background: #e2e8f0; border-left-color: var(--green);">
+                            <p>Total Venta Tienda: <span id="vt-total-preview" style="font-size: 1.1rem; color: var(--green);">$0</span></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Medio de Pago:</label>
+                            <select id="vt-mediopago" required>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta Débito/Crédito</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Venta de Tienda</button>
                     </form>
                 </div>
             </section>
@@ -580,9 +619,6 @@
                                 <option value="SALIDA">Salida</option>
                                 <option value="AJUSTE">Ajuste Físico</option>
                             </select>
-                        </div>
-                        <div class="main-content-form">
-                            <!-- Continuación del inventario -->
                         </div>
                         <div class="form-group">
                             <label>Cantidad:</label>
