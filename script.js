@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbw9a0csyY97Ki4qLyHuKRmet_ZEz5XQyKQEQ-RHYYvHW-sbk-IyQgeda3AuytdFdIKA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyOMklWqb5HgXe-5TQ5ctSetAmjfztHNovshFXFQzgvAJ-10clTNv0KOjj_V7JWqJBw/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -53,6 +53,14 @@ async function sincronizarDatosGlobales() {
     mostrarNotificacion("Sincronizando con la nube...", "success");
     try {
         let todo = await ejecutarAPI({ accion: 'obtenerDatosIniciales', filtroVentas: filtroActualDashboard });
+        
+        // Actualización dinámica de la versión del sistema
+        if (todo.versionSistema) {
+            let elLogin = document.getElementById('lbl-version-login');
+            let elSidebar = document.getElementById('lbl-version-sidebar');
+            if (elLogin) elLogin.innerText = `Version ${todo.versionSistema}`;
+            if (elSidebar) elSidebar.innerText = `FuelManager ${todo.versionSistema}`;
+        }
         
         renderizarDashboardDatos(todo.dashboard);
         renderizarSurtidoresSelect(todo.surtidores);
@@ -472,7 +480,7 @@ function renderizarCuentasPorPagar(cuentas) {
             hayAlertasUrgentes = true;
             alertasContainer.innerHTML += `
                 <div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 10px;">
-                    <p><span class="badge red">⚠️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
+                    <p><span class="badge red">⚠️️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
                     <p style="margin-top: 5px; color: var(--red); font-weight: bold;">${c.mensajeAlerta} Límite: ${c.fechaLimite} - Valor: $${Math.round(c.valor).toLocaleString()}</p>
                 </div>
             `;
