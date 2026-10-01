@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwOMfLwb7HQxC8v2qSezWFCoTU1JIuxdj9V1KFRP8iidqwjvfFjW149N3VBwu2OV6Bl/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxfDXyaBR9DYpizTenCO3YcrKJnF7iIEi6CKazi7_MIdHyIZco3Niubh90bb9JdHYiW/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -51,6 +51,7 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
 async function sincronizarDatosGlobales() {
     mostrarNotificacion("Actualizando datos desde la nube...", "success");
     try {
+        // Ejecución optimizada en paralelo directo para mayor fluidez
         await Promise.all([
             cargarDashboard(),
             cargarSurtidoresSelect(),
@@ -728,7 +729,7 @@ async function cargarReportesyAlertas() {
                 contenedorAlertas.innerHTML = "<p style='color: var(--green);'>✅ No hay alertas activas en el sistema.</p>";
             } else {
                 alertas.forEach(a => {
-                    contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️ ${a.mensaje}</p></div>`;
+                    contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️️ ${a.mensaje}</p></div>`;
                 });
             }
         }
