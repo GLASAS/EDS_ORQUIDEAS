@@ -14,6 +14,44 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 
 .app-container { display: flex; height: 100vh; overflow: hidden; }
 
+/* Barra de carga superior deslizante */
+.loading-bar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background-color: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 99999;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: slideDown 0.3s ease;
+}
+
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
 /* Sidebar */
 .sidebar { width: 260px; background-color: var(--primary); color: white; display: flex; flex-direction: column; justify-content: space-between; }
 .sidebar-header h2 { padding: 20px; font-size: 1.25rem; border-bottom: 1px solid #334155; }
@@ -21,7 +59,6 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 .sidebar nav a { color: #94a3b8; text-decoration: none; padding: 10px 15px; border-radius: 8px; transition: 0.2s; font-size: 0.9rem; }
 .sidebar nav a:hover, .sidebar nav a.active { background-color: var(--accent); color: white; }
 
-/* Botón de salir integrado en los módulos con el color azul/rojo distintivo */
 .btn-salir-modulo {
     margin-top: 15px;
     background-color: #ef4444 !important;
