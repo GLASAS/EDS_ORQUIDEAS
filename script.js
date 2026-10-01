@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbw0vpnZlkqPsMNkTjyCfUSCE76d32sNBQjXqlqJSxSUh_5IHkrPMGzyBHJiFYXQjuOU/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw58qlErJobKjEcl6lDmnhQBK1ivUdfBbNlcSG__cGrUaPozOYS2N2THGMELl-PAFpO/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -149,7 +149,7 @@ function mostrarSeccion(seccionId, event) {
         cargarCatalogosCompra();
     } else if (seccionId === 'caja') {
         document.getElementById('sec-caja').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Control de Caja";
+        document.getElementById('titulo-seccion').innerText = "Control de Caja y Buzón";
         verificarEstadoCaja();
     } else if (seccionId === 'gastos') {
         document.getElementById('sec-gastos').classList.add('active');
@@ -251,7 +251,6 @@ async function cargarSurtidoresSelect() {
         let select = document.getElementById('venta-surtidor');
         select.innerHTML = '<option value="">-- Seleccione un Surtidor --</option>';
         surts.forEach(s => {
-            // Muestra: ISLA-01 - Surtidor ACPM 1 (ACPM)
             select.innerHTML += `<option value="${s.ID}">${s.IslaID} - ${s.Nombre} (${s.CombustibleNombre})</option>`;
         });
         actualizarInfoSurtidor();
@@ -348,6 +347,10 @@ async function cargarProductosTabla() {
         productosGlobal = prods;
         let tbody = document.querySelector('#tabla-productos tbody');
         tbody.innerHTML = "";
+        if (!prods || prods.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No hay productos registrados.</td></tr>";
+            return;
+        }
         prods.forEach(p => {
             tbody.innerHTML += `
                 <tr>
@@ -400,43 +403,26 @@ async function actualizarItemsCompraSelect() {
     }
 }
 
-async function handleCompra(event) {
-    event.preventDefault();
-    let proveedorID = document.getElementById('compra-proveedor').value;
-    let tipoItem = document.getElementById('compra-tipo-item').value;
-    let itemID = document.getElementById('compra-item').value;
-    let cantidad = Math.round(Number(document.getElementById('compra-cantidad').value));
-    let precio = Math.round(Number(document.getElementById('compra-precio').value));
-    let fecha = document.getElementById('compra-fecha').value;
-    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
-
-    let items = [{ tipoItem, itemID, cantidad, precioUnitario: precio }];
-
-    try {
-        let res = await ejecutarAPI({ accion: 'registrarCompra', proveedorID, fechaEsperada: fecha, items, usuario: nombreUsuario });
-        mostrarNotificacion(`Orden registrada. ID: ${res.compraID} - Total: $${Math.round(res.total).toLocaleString()}`, 'success');
-        document.getElementById('form-compra').reset();
-        mostrarSeccion('dashboard');
-    } catch (err) {
-        mostrarNotificacion(err.message, 'error');
-    }
-}
-
 async function verificarEstadoCaja() {
     try {
         let res = await ejecutarAPI({ accion: 'obtenerEstadoCaja' });
         let lbl = document.getElementById('lbl-estado-caja');
         let divAbrir = document.getElementById('div-abrir-caja');
         let divCerrar = document.getElementById('div-cerrar-caja');
+        let divBuzon = document.getElementById('div-buzon-seguridad');
 
         if (res.estado === "ABIERTA") {
-            lbl.innerText = "ABIERTA (Iniciada el " + new Date(res.fechaApertura).toLocaleString() + " con base de $" + Math.round(res.baseInicial).toLocaleString() + ")";
-            divAbrir.style.display = "none";
-            divCerrar.style.display = "block";
+            lbl.innerHTML = `ABIERTA (Iniciada el ${new Date(res.fechaApertura).toLocaleString()})<br>` +
+                            `Base en Caja: <b>$${Math.round(res.baseInicial).toLocaleString()}</b> | ` +
+                            `Sobres en Buzón: <b>$${Math.round(res.totalSobresBuzon).toLocaleString()} (${res.cantidadSobres} sobres)</b>`;
+            if (divAbrir) divAbrir.style.display = "none";
+            if (divCerrar) divCerrar.style.display = "block";
+            if (divBuzon) divBuzon.style.display = "block";
         } else {
             lbl.innerText = "CERRADA (Sin turno activo)";
-            divAbrir.style.display = "block";
-            divCerrar.style.display = "none";
+            if (divAbrir) divAbrir.style.display = "block";
+            if (divCerrar) divCerrar.style.display = "none";
+            if (divBuzon) divBuzon.style.display = "none";
         }
     } catch (err) {
         console.error(err);
@@ -457,6 +443,21 @@ async function handleAbrirCaja(event) {
     }
 }
 
+async function handleRegistrarSobre(event) {
+    event.preventDefault();
+    let valorSobre = Math.round(Number(document.getElementById('sobre-valor').value));
+    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
+
+    try {
+        let res = await ejecutarAPI({ accion: 'registrarSobreSeguridad', valorSobre: valorSobre, usuario: nombreUsuario });
+        mostrarNotificacion(res.mensaje, 'success');
+        document.getElementById('form-sobre-seguridad').reset();
+        verificarEstadoCaja();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
 async function handleCerrarCaja(event) {
     event.preventDefault();
     let real = Math.round(Number(document.getElementById('caja-real').value));
@@ -471,30 +472,11 @@ async function handleCerrarCaja(event) {
     }
 }
 
-async function handleGasto(event) {
-    event.preventDefault();
-    let cat = document.getElementById('gasto-categoria').value;
-    let desc = document.getElementById('gasto-desc').value;
-    let val = Math.round(Number(document.getElementById('gasto-valor').value));
-    let pago = document.getElementById('gasto-pago').value;
-    let resp = document.getElementById('gasto-resp').value;
-    let soporte = document.getElementById('gasto-soporte').value;
-    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
-
-    try {
-        await ejecutarAPI({ accion: 'registrarGasto', categoria: cat, descripcion: desc, valor: val, formaPago: pago, responsable: resp, soporte, usuario: nombreUsuario });
-        mostrarNotificacion("Gasto registrado con éxito.", 'success');
-        document.getElementById('form-gasto').reset();
-        mostrarSeccion('dashboard');
-    } catch (err) {
-        mostrarNotificacion(err.message, 'error');
-    }
-}
-
 async function cargarClientesTabla() {
     try {
         let clientes = await ejecutarAPI({ accion: 'obtenerClientes' });
         let tbody = document.querySelector('#tabla-clientes tbody');
+        if(!tbody) return;
         tbody.innerHTML = "";
         clientes.forEach(c => {
             tbody.innerHTML += `<tr><td><b>${c.Nombre}</b></td><td>${c.NIT_CC}</td><td>${c.Telefono}</td><td>${c.Email}</td><td>${c.TipoCliente}</td></tr>`;
@@ -508,7 +490,12 @@ async function cargarUsuariosTabla() {
     try {
         let usuarios = await ejecutarAPI({ accion: 'obtenerUsuarios' });
         let tbody = document.querySelector('#tabla-usuarios tbody');
+        if(!tbody) return;
         tbody.innerHTML = "";
+        if (!usuarios || usuarios.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No hay usuarios registrados.</td></tr>";
+            return;
+        }
         usuarios.forEach(u => {
             tbody.innerHTML += `<tr><td>${u.id}</td><td><b>${u.nombre}</b></td><td>${u.cedula}</td><td>${u.rol}</td><td><span class="badge green">${u.estado}</span></td></tr>`;
         });
@@ -524,10 +511,9 @@ async function handleCrearUsuario(event) {
     let pass = document.getElementById('nuevo-pass').value;
     let fechaExp = document.getElementById('nuevo-fecha-exp').value;
     let rol = document.getElementById('nuevo-rol').value;
-    let adminNombre = usuarioActual ? usuarioActual.nombre : "Administrador";
 
     try {
-        let res = await ejecutarAPI({ accion: 'registrarUsuario', nombre, cedula, password: pass, rol, fechaExpedicion: fechaExp, usuarioAdmin: adminNombre });
+        let res = await ejecutarAPI({ accion: 'registrarUsuario', nombre, cedula, password: pass, rol, fechaExpedicion: fechaExp });
         mostrarNotificacion(res.mensaje, 'success');
         document.getElementById('form-nuevo-usuario').reset();
         cargarUsuariosTabla();
@@ -544,46 +530,7 @@ async function cargarReportesyAlertas() {
         document.getElementById('rep-ventas-conteo').innerText = rep.conteoVentas;
         document.getElementById('rep-gastos').innerText = "$" + Math.round(rep.totalGastosDinero).toLocaleString();
         document.getElementById('rep-compras').innerText = "$" + Math.round(rep.totalComprasDinero).toLocaleString();
-
-        let alertas = await ejecutarAPI({ accion: 'obtenerAlertas' });
-        let container = document.getElementById('lista-alertas-container');
-        container.innerHTML = "";
-        if (alertas.length === 0) {
-            container.innerHTML = "<p>No hay alertas activas en este momento.</p>";
-            return;
-        }
-        alertas.forEach(a => {
-            container.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); margin-bottom: 10px;"><p><span class="badge red">${a.nivel}</span></p><p style="margin-top: 5px;">${a.mensaje}</p></div>`;
-        });
     } catch (err) {
         console.error(err);
-    }
-}
-
-async function inicializarDatos() {
-    try {
-        let msg = await ejecutarAPI({ accion: 'inicializarSistema' });
-        mostrarNotificacion(msg, 'success');
-        cargarDashboard();
-    } catch (err) {
-        mostrarNotificacion(err.message, 'error');
-    }
-}
-
-async function handleMovimiento(event) {
-    event.preventDefault();
-    let combustibleID = document.getElementById('mov-combustible').value;
-    let tipoMovimiento = document.getElementById('mov-tipo').value;
-    let cantidad = Math.round(Number(document.getElementById('mov-cantidad').value));
-    let observaciones = document.getElementById('mov-obs').value;
-    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
-
-    try {
-        let res = await ejecutarAPI({ accion: 'registrarMovimientoInventario', combustibleID, tipoMovimiento, cantidad, observaciones, usuario: nombreUsuario });
-        mostrarNotificacion(`Movimiento registrado. Nuevo stock: ${Math.round(res.nuevoStock)}`, 'success');
-        document.getElementById('form-movimiento').reset();
-        mostrarSeccion('dashboard');
-    } catch (err) {
-        mostrarNotificacion(err.message, 'error');
     }
 }
