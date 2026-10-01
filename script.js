@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyWthmcFcNL9cA2oaZUhEy-p8WZAzOLaRlJkDjEdj9PxCBZjAGfQb04dbj-zOLxyBJA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxzMg9c0uiR4oq2bs26POlnvKh1rrye8GBshQn_Xsg_6RNKep2CjVeL-j32Nyv_QnSl/exec";
 
 let usuarioActual = null;
 
@@ -178,7 +178,7 @@ async function cargarCuentasPorPagar() {
                 hayAlertasUrgentes = true;
                 alertasContainer.innerHTML += `
                     <div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 10px;">
-                        <p><span class="badge red">⚠ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
+                        <p><span class="badge red">⚠️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
                         <p style="margin-top: 5px; color: var(--red); font-weight: bold;">${c.mensajeAlerta} Límite: ${c.fechaLimite} - Valor: $${Math.round(c.valor).toLocaleString()}</p>
                     </div>
                 `;
