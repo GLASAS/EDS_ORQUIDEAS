@@ -1,5 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/AKfycby1EAEtmlQ0G1T6nyzcxGkXwIYZMAOZstBm0S-bRhTt6lOgqsrQdzgW0rWfNB08eBq5/exec";
-const VERSION_SISTEMA = "V.1145"; // <--- CAMBIA AQUÍ LA VERSIÓN CUANDO LO DESEES
+const API_URL = "https://script.google.com/macros/s/AKfycbx60o9r6Sxf7z8abr-2DWX_oQT0eI7yJlqhwF5J4sMriHLhn1JB4HgYqhDgslVoctE/exec";
+const VERSION_SISTEMA = "V.1150"; // <--- CAMBIA AQUÍ LA VERSIÓN CUANDO LO DESEES
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -652,8 +652,10 @@ function renderizarUsuariosTabla(usuarios) {
                 <td>${u.rol}</td>
                 <td><span class="badge ${badgeClase}">${textoEstado}</span></td>
                 <td>
-                    <button class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem; background: ${colorBotonEstado}; color: #fff; margin-right: 5px;" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
-                    <button class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem; background: var(--red); color: #fff;" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn-accion-tabla" style="background: ${colorBotonEstado}; color: #fff;" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
+                        <button class="btn-accion-tabla" style="background: var(--red); color: #fff;" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
+                    </div>
                 </td>
             </tr>
         `;
