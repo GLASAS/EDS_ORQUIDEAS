@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbySNC2eGLhHlOY4LUgNz5Vr30Oj3eehHNnVx_w691SQv8cxpBBP10B-etT2-wSc5Itx/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz0g0kZ0kh3T5u99RkIe02AIZBQZnj-7t1tTEHD8MvDXo5Lty0VJE64fDu2JuCle2sB/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -48,7 +48,6 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     }, 4000);
 }
 
-// Carga en paralelo ultra rápida para optimizar el rendimiento
 async function sincronizarDatosGlobales() {
     mostrarNotificacion("Actualizando datos desde la nube...", "success");
     try {
