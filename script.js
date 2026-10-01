@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzuo66WMdnu_5ayhHUlrezxIX7Nr9hYKe-99mbmx8gpLJnO6B286AN3batdjqpFSP3N/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzQVbNjKCj9NC4QXB6TR4UXX8rjJRjVk1fGxQ2rlITZyE-GGBvHQcyyuq870kjFv1C_/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -6,6 +6,9 @@ let usuarioActual = null;
 let filtroActualDashboard = 'hoy';
 
 async function ejecutarAPI(payload) {
+    let loader = document.getElementById('loading-indicator');
+    if (loader) loader.style.display = 'flex';
+
     try {
         let respuesta = await fetch(API_URL, {
             method: 'POST',
@@ -19,6 +22,8 @@ async function ejecutarAPI(payload) {
         }
     } catch (error) {
         throw error;
+    } finally {
+        if (loader) loader.style.display = 'none';
     }
 }
 
@@ -181,8 +186,8 @@ async function cargarDashboard() {
     try {
         let res = await ejecutarAPI({ accion: 'obtenerDashboard', filtroVentas: filtroActualDashboard });
         let v = res.ventasResumen;
-        document.getElementById('dash-ventas-dinero').innerText = "$" + v.dinero.toLocaleString();
-        document.getElementById('dash-ventas-galones').innerText = v.galones.toFixed(2) + " Gal";
+        document.getElementById('dash-ventas-dinero').innerText = "$" + Math.round(v.dinero).toLocaleString();
+        document.getElementById('dash-ventas-galones').innerText = Math.round(v.galones) + " Gal";
         document.getElementById('dash-ventas-conteo').innerText = v.conteo;
 
         let container = document.getElementById('dashboard-cards');
@@ -190,15 +195,21 @@ async function cargarDashboard() {
         
         res.combustibles.forEach(c => {
             let color = c.colorEstado;
-            let capMax = Number(c.CapacidadMaxima) || 5000;
-            
+            let capMax = Math.round(Number(c.CapacidadMaxima) || 5000);
+            let stockActualRedondeado = Math.round(Number(c.StockActual) || 0);
+            let cantidadSugeridaRedondeada = Math.round(Number(c.cantidadSugerida) || 0);
+            let diasCoberturaRedondeados = Math.round(Number(c.diasCobertura) || 0);
+            let stockMinimoRedondeado = Math.round(Number(c.StockMinimo) || 0);
+            let stockSeguridadRedondeado = Math.round(Number(c.StockSeguridad) || 0);
+            let consumoDiarioRedondeado = Math.round(Number(c.consumoDiarioEstimado) || 0);
+            let porcentajeRedondeado = Math.round(Number(c.porcentajeLlenado) || 0);
+
             let esCorriente = c.Nombre.toLowerCase().includes('corriente');
             let esAcpm = c.Nombre.toLowerCase().includes('acpm');
-            let cantidadSugeridaNum = Number(c.cantidadSugerida) || 0;
             let alertaRoja = false;
 
-            if (esCorriente && cantidadSugeridaNum >= 4300) alertaRoja = true;
-            if (esAcpm && cantidadSugeridaNum >= 1100) alertaRoja = true;
+            if (esCorriente && cantidadSugeridaRedondeada >= 4300) alertaRoja = true;
+            if (esAcpm && cantidadSugeridaRedondeada >= 1100) alertaRoja = true;
 
             let estiloSugerida = alertaRoja ? 'color: var(--red); font-weight: bold;' : 'color: var(--accent);';
 
@@ -206,19 +217,19 @@ async function cargarDashboard() {
                 <div class="card ${color} tanque-card">
                     <h3>${c.Nombre} <span class="badge ${color}">${c.estadoAlerta}</span></h3>
                     <div class="tanque-visual-container">
-                        <div class="cilindro-tanque" title="Nivel: ${c.porcentajeLlenado}%">
-                            <div class="cilindro-liquido ${color}" style="height: ${c.porcentajeLlenado}%;"></div>
+                        <div class="cilindro-tanque" title="Nivel: ${porcentajeRedondeado}%">
+                            <div class="cilindro-liquido ${color}" style="height: ${porcentajeRedondeado}%;"></div>
                         </div>
                         <div style="flex: 1;">
-                            <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${c.StockActual} ${c.Unidad}</p>
+                            <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${stockActualRedondeado} ${c.Unidad}</p>
                             <p style="font-size: 0.85rem; color: #64748b;">Capacidad: ${capMax} Gal</p>
-                            <p style="font-size: 0.85rem; color: #64748b;">Autonomía: <b>${c.diasCobertura} días</b></p>
+                            <p style="font-size: 0.85rem; color: #64748b;">Autonomía: <b>${diasCoberturaRedondeados} días</b></p>
                         </div>
                     </div>
                     <div class="card-body" style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                        <p>Consumo Diario Est.: <span>${c.consumoDiarioEstimado} ${c.Unidad}</span></p>
-                        <p>Stock Mínimo / Seg.: <span>${c.StockMinimo} / ${c.StockSeguridad}</span></p>
-                        <p>Cantidad Sugerida Pedido: <span style="${estiloSugerida}">${c.cantidadSugerida} ${c.Unidad}</span></p>
+                        <p>Consumo Diario Est.: <span>${consumoDiarioRedondeado} ${c.Unidad}</span></p>
+                        <p>Stock Mínimo / Seg.: <span>${stockMinimoRedondeado} / ${stockSeguridadRedondeado}</span></p>
+                        <p>Cantidad Sugerida Pedido: <span style="${estiloSugerida}">${cantidadSugeridaRedondeada} ${c.Unidad}</span></p>
                     </div>
                 </div>
             `;
@@ -249,7 +260,7 @@ function actualizarInfoSurtidor() {
     let surt = surtidoresGlobal.find(s => s.ID === idSeleccionado);
     if (surt) {
         document.getElementById('info-comb').innerText = surt.CombustibleNombre;
-        document.getElementById('info-precio').innerText = surt.PrecioVenta;
+        document.getElementById('info-precio').innerText = Math.round(Number(surt.PrecioVenta));
         calcularTotalVentaPreview();
     }
 }
@@ -260,7 +271,7 @@ function calcularTotalVentaPreview() {
     let galones = parseFloat(document.getElementById('venta-galones').value) || 0;
     
     if (surt) {
-        let total = galones * Number(surt.PrecioVenta);
+        let total = Math.round(galones * Number(surt.PrecioVenta));
         document.getElementById('info-total-preview').innerText = "$" + total.toLocaleString();
     }
 }
@@ -275,7 +286,7 @@ async function handleVenta(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarVentaPorGalones', surtidorID: surtID, cantidadGalones: galones, medioPago, usuario: nombreUsuario, observaciones: obs });
-        mostrarNotificacion(`Venta registrada. Galones: ${res.cantidadGalones.toFixed(2)} - Total: $${res.totalVenta.toLocaleString()}`, 'success');
+        mostrarNotificacion(`Venta registrada. Galones: ${Math.round(res.cantidadGalones)} - Total: $${Math.round(res.totalVenta).toLocaleString()}`, 'success');
         document.getElementById('form-venta').reset();
         document.getElementById('info-total-preview').innerText = "$0";
         mostrarSeccion('dashboard');
@@ -287,7 +298,7 @@ async function handleVenta(event) {
 async function handleActualizarPrecio(event) {
     event.preventDefault();
     let combustibleID = document.getElementById('precio-combustible-id').value;
-    let nuevoPrecio = document.getElementById('precio-nuevo-valor').value;
+    let nuevoPrecio = Math.round(Number(document.getElementById('precio-nuevo-valor').value));
     let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
 
     try {
@@ -315,8 +326,8 @@ async function cargarHistorialPrecios() {
                 <tr>
                     <td>${h.fechaHora}</td>
                     <td><b>${h.combustibleNombre}</b></td>
-                    <td>$${Number(h.precioAnterior).toLocaleString()}</td>
-                    <td><b style="color: var(--accent);">$${Number(h.precioNuevo).toLocaleString()}</b></td>
+                    <td>$${Math.round(Number(h.precioAnterior)).toLocaleString()}</td>
+                    <td><b style="color: var(--accent);">$${Math.round(Number(h.precioNuevo)).toLocaleString()}</b></td>
                     <td>${h.usuario}</td>
                 </tr>
             `;
@@ -338,9 +349,9 @@ async function cargarProductosTabla() {
                     <td>${p.Codigo}</td>
                     <td><b>${p.Nombre}</b></td>
                     <td>${p.Categoria}</td>
-                    <td>$${Number(p.PrecioVenta).toLocaleString()}</td>
-                    <td><b>${p.Stock} ${p.Unidad}</b></td>
-                    <td>${p.StockMinimo}</td>
+                    <td>$${Math.round(Number(p.PrecioVenta)).toLocaleString()}</td>
+                    <td><b>${Math.round(Number(p.Stock))} ${p.Unidad}</b></td>
+                    <td>${Math.round(Number(p.StockMinimo))}</td>
                     <td>${p.Ubicacion}</td>
                 </tr>
             `;
@@ -375,11 +386,11 @@ async function actualizarItemsCompraSelect() {
     if (tipo === "COMBUSTIBLE") {
         let res = await ejecutarAPI({ accion: 'obtenerDashboard' });
         res.combustibles.forEach(c => {
-            selectItem.innerHTML += `<option value="${c.ID}">${c.Nombre} (Stock actual: ${c.StockActual})</option>`;
+            selectItem.innerHTML += `<option value="${c.ID}">${c.Nombre} (Stock actual: ${Math.round(c.StockActual)})</option>`;
         });
     } else {
         productosGlobal.forEach(p => {
-            selectItem.innerHTML += `<option value="${p.ID}">${p.Nombre} (Stock actual: ${p.Stock})</option>`;
+            selectItem.innerHTML += `<option value="${p.ID}">${p.Nombre} (Stock actual: ${Math.round(p.Stock)})</option>`;
         });
     }
 }
@@ -389,8 +400,8 @@ async function handleCompra(event) {
     let proveedorID = document.getElementById('compra-proveedor').value;
     let tipoItem = document.getElementById('compra-tipo-item').value;
     let itemID = document.getElementById('compra-item').value;
-    let cantidad = document.getElementById('compra-cantidad').value;
-    let precio = document.getElementById('compra-precio').value;
+    let cantidad = Math.round(Number(document.getElementById('compra-cantidad').value));
+    let precio = Math.round(Number(document.getElementById('compra-precio').value));
     let fecha = document.getElementById('compra-fecha').value;
     let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
 
@@ -398,7 +409,7 @@ async function handleCompra(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarCompra', proveedorID, fechaEsperada: fecha, items, usuario: nombreUsuario });
-        mostrarNotificacion(`Orden registrada. ID: ${res.compraID} - Total: $${res.total.toLocaleString()}`, 'success');
+        mostrarNotificacion(`Orden registrada. ID: ${res.compraID} - Total: $${Math.round(res.total).toLocaleString()}`, 'success');
         document.getElementById('form-compra').reset();
         mostrarSeccion('dashboard');
     } catch (err) {
@@ -414,7 +425,7 @@ async function verificarEstadoCaja() {
         let divCerrar = document.getElementById('div-cerrar-caja');
 
         if (res.estado === "ABIERTA") {
-            lbl.innerText = "ABIERTA (Iniciada el " + new Date(res.fechaApertura).toLocaleString() + " con base de $" + res.baseInicial.toLocaleString() + ")";
+            lbl.innerText = "ABIERTA (Iniciada el " + new Date(res.fechaApertura).toLocaleString() + " con base de $" + Math.round(res.baseInicial).toLocaleString() + ")";
             divAbrir.style.display = "none";
             divCerrar.style.display = "block";
         } else {
@@ -429,7 +440,7 @@ async function verificarEstadoCaja() {
 
 async function handleAbrirCaja(event) {
     event.preventDefault();
-    let base = document.getElementById('caja-base').value;
+    let base = Math.round(Number(document.getElementById('caja-base').value));
     let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
 
     try {
@@ -443,12 +454,12 @@ async function handleAbrirCaja(event) {
 
 async function handleCerrarCaja(event) {
     event.preventDefault();
-    let real = document.getElementById('caja-real').value;
+    let real = Math.round(Number(document.getElementById('caja-real').value));
     let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
 
     try {
         let res = await ejecutarAPI({ accion: 'cerrarCaja', totalReal: real, usuario: nombreUsuario });
-        mostrarNotificacion(`Caja cerrada. Esperado: $${res.totalEsperado.toLocaleString()} | Diferencia: $${res.diferencia.toLocaleString()}`, 'success');
+        mostrarNotificacion(`Caja cerrada. Esperado: $${Math.round(res.totalEsperado).toLocaleString()} | Diferencia: $${Math.round(res.diferencia).toLocaleString()}`, 'success');
         verificarEstadoCaja();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
@@ -459,7 +470,7 @@ async function handleGasto(event) {
     event.preventDefault();
     let cat = document.getElementById('gasto-categoria').value;
     let desc = document.getElementById('gasto-desc').value;
-    let val = document.getElementById('gasto-valor').value;
+    let val = Math.round(Number(document.getElementById('gasto-valor').value));
     let pago = document.getElementById('gasto-pago').value;
     let resp = document.getElementById('gasto-resp').value;
     let soporte = document.getElementById('gasto-soporte').value;
@@ -523,11 +534,11 @@ async function handleCrearUsuario(event) {
 async function cargarReportesyAlertas() {
     try {
         let rep = await ejecutarAPI({ accion: 'obtenerReportes' });
-        document.getElementById('rep-ventas-dinero').innerText = "$" + rep.totalVentasDinero.toLocaleString();
-        document.getElementById('rep-ventas-galones').innerText = rep.totalGalonesVendidos.toFixed(2) + " Gal";
+        document.getElementById('rep-ventas-dinero').innerText = "$" + Math.round(rep.totalVentasDinero).toLocaleString();
+        document.getElementById('rep-ventas-galones').innerText = Math.round(rep.totalGalonesVendidos) + " Gal";
         document.getElementById('rep-ventas-conteo').innerText = rep.conteoVentas;
-        document.getElementById('rep-gastos').innerText = "$" + rep.totalGastosDinero.toLocaleString();
-        document.getElementById('rep-compras').innerText = "$" + rep.totalComprasDinero.toLocaleString();
+        document.getElementById('rep-gastos').innerText = "$" + Math.round(rep.totalGastosDinero).toLocaleString();
+        document.getElementById('rep-compras').innerText = "$" + Math.round(rep.totalComprasDinero).toLocaleString();
 
         let alertas = await ejecutarAPI({ accion: 'obtenerAlertas' });
         let container = document.getElementById('lista-alertas-container');
@@ -558,13 +569,13 @@ async function handleMovimiento(event) {
     event.preventDefault();
     let combustibleID = document.getElementById('mov-combustible').value;
     let tipoMovimiento = document.getElementById('mov-tipo').value;
-    let cantidad = document.getElementById('mov-cantidad').value;
+    let cantidad = Math.round(Number(document.getElementById('mov-cantidad').value));
     let observaciones = document.getElementById('mov-obs').value;
     let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarMovimientoInventario', combustibleID, tipoMovimiento, cantidad, observaciones, usuario: nombreUsuario });
-        mostrarNotificacion(`Movimiento registrado. Nuevo stock: ${res.nuevoStock}`, 'success');
+        mostrarNotificacion(`Movimiento registrado. Nuevo stock: ${Math.round(res.nuevoStock)}`, 'success');
         document.getElementById('form-movimiento').reset();
         mostrarSeccion('dashboard');
     } catch (err) {
