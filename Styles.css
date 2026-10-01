@@ -29,11 +29,9 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 .topbar { background: var(--card-bg); padding: 12px 25px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
 .topbar h1 { font-size: 1.2rem; color: var(--primary); }
 
-/* Grupo derecho alineado en una sola línea al final */
 .topbar-right-group { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto; }
 #user-info { font-size: 0.85rem; font-weight: 600; color: var(--primary); }
 
-/* Botón Refrescar */
 .btn-refrescar-discreto {
     background: #f1f5f9;
     border: 1px solid #cbd5e1;
@@ -53,7 +51,6 @@ body { background-color: var(--bg-color); color: var(--text-main); }
     transform: rotate(45deg);
 }
 
-/* Botón Salir al final de la línea */
 .btn-salir-header {
     background: #ef4444;
     color: white;
@@ -64,9 +61,7 @@ body { background-color: var(--bg-color); color: var(--text-main); }
     font-size: 0.85rem;
     font-weight: 600;
 }
-.btn-salir-header:hover {
-    opacity: 0.9;
-}
+.btn-salir-header:hover { opacity: 0.9; }
 
 .seccion { display: none; padding: 30px; }
 .seccion.active { display: block; }
