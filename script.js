@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyAtfwQCzIvh02KIzH6WiGR_DCrEV-dAqco2f6SPs6lTg7JdQ5lmNZqAQRipvTSwN2B/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwthM_D598wdp2UHKHtHC-zz4ybH30fvDjEoGeQ_VXXNLyRGy5b_JfxMh1gpKdQ5dpZ/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -643,14 +643,53 @@ async function cargarUsuariosTabla() {
         if(!tbody) return;
         tbody.innerHTML = "";
         if (!usuarios || usuarios.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No hay usuarios registrados.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align: center;'>No hay usuarios registrados.</td></tr>";
             return;
         }
         usuarios.forEach(u => {
-            tbody.innerHTML += `<tr><td>${u.id}</td><td><b>${u.nombre}</b></td><td>${u.cedula}</td><td>${u.rol}</td><td><span class="badge green">${u.estado}</span></td></tr>`;
+            let esActivo = String(u.estado).toUpperCase() === 'ACTIVO';
+            let badgeClase = esActivo ? 'green' : 'red';
+            let textoEstado = esActivo ? 'Activo' : 'Inactivo';
+            let botonEstadoTexto = esActivo ? 'Inactivar' : 'Activar';
+            let colorBotonEstado = esActivo ? 'var(--yellow)' : 'var(--green)';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${u.id}</td>
+                    <td><b>${u.nombre}</b></td>
+                    <td>${u.cedula}</td>
+                    <td>${u.rol}</td>
+                    <td><span class="badge ${badgeClase}">${textoEstado}</span></td>
+                    <td>
+                        <button class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem; background: ${colorBotonEstado}; color: #fff; margin-right: 5px;" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
+                        <button class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem; background: var(--red); color: #fff;" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
+                    </td>
+                </tr>
+            `;
         });
     } catch (err) {
         console.error(err);
+    }
+}
+
+async function toggleEstadoUsuario(id) {
+    try {
+        let res = await ejecutarAPI({ accion: 'cambiarEstadoUsuario', id });
+        mostrarNotificacion(res.mensaje, 'success');
+        cargarUsuariosTabla();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
+async function eliminarUsuarioSistema(id) {
+    if (!confirm("¿Está seguro de eliminar este usuario del sistema?")) return;
+    try {
+        let res = await ejecutarAPI({ accion: 'eliminarUsuario', id });
+        mostrarNotificacion(res.mensaje, 'success');
+        cargarUsuariosTabla();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
     }
 }
 
