@@ -40,7 +40,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p><b>EDS ORQUIDEAS</b> <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1210</span></p>
+                <p>EDS ORQUIDEAS <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1143</span></p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -97,7 +97,7 @@
                 <a href="#" onclick="cerrarSesion()" class="btn-salir-modulo">🚪 Salir del Sistema</a>
             </nav>
             <div class="sidebar-footer">
-                <p>Copyright © 2026 <span id="lbl-version-sidebar">FuelManager V1050</span></p>
+                <p>Copyright © 2026 <span id="lbl-version-sidebar">FuelManager V1143</span></p>
                 <p class="compat-info">Chrome | iOS/Safari | Edge | Firefox</p>
             </div>
         </aside>
@@ -126,12 +126,13 @@
                     <div class="card green">
                         <h3>Ventas del Período</h3>
                         <div class="card-body">
-                            <p>Dinero Recaudado: <span id="dash-ventas-dinero">$0</span></p>
-                            <p>Ventas en Efectivo: <span id="dash-ventas-efectivo">$0</span></p>
-                            <p>Pago con Tarjeta: <span id="dash-ventas-tarjeta">$0</span></p>
-                            <p>Ventas a Crédito: <span id="dash-ventas-credito">$0</span></p>
-                            <p>Galones Despachados: <span id="dash-ventas-galones">0 Gal</span></p>
-                            <p>Transacciones: <span id="dash-ventas-conteo">0</span></p>
+                            <p>1. Dinero Recaudado: <span id="dash-ventas-dinero">$0</span></p>
+                            <p>2. Ventas en Efectivo: <span id="dash-ventas-efectivo">$0</span></p>
+                            <p>3. Pago con Tarjeta: <span id="dash-ventas-tarjeta">$0</span></p>
+                            <p>4. Ventas a Crédito: <span id="dash-ventas-credito">$0</span></p>
+                            <p>5. Galones ACPM Despachados: <span id="dash-galones-acpm">0 Gal</span></p>
+                            <p>6. Galones Gasolina Despachados: <span id="dash-galones-gasolina">0 Gal</span></p>
+                            <p>7. Número de Transacciones: <span id="dash-ventas-conteo">0</span></p>
                         </div>
                     </div>
                 </div>
@@ -180,7 +181,7 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN VENDER PRODUCTOS DE TIENDA (NUEVO) -->
+            <!-- SECCIÓN VENDER PRODUCTOS DE TIENDA -->
             <section id="sec-ventas-tienda" class="seccion">
                 <div class="card form-card">
                     <h3>🛒 Registrar Venta de Producto de Tienda</h3>
@@ -345,7 +346,6 @@
                     </div>
                 </div>
 
-                <!-- MÓDULO DE BUZÓN DE SEGURIDAD (PARCIALES) -->
                 <div id="div-buzon-seguridad" class="card form-card" style="display:none; border-top-color: var(--yellow);">
                     <h3>📥 Depósito de Parciales / Buzón de Seguridad</h3>
                     <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">
