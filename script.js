@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzQVbNjKCj9NC4QXB6TR4UXX8rjJRjVk1fGxQ2rlITZyE-GGBvHQcyyuq870kjFv1C_/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwNIO_NjUMz-HF74ZfkEK7zmZnjuMU6VNex1NRYSh-VIbeinKXw_LwHTT2Jf8BLjpd-/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -186,7 +186,11 @@ async function cargarDashboard() {
     try {
         let res = await ejecutarAPI({ accion: 'obtenerDashboard', filtroVentas: filtroActualDashboard });
         let v = res.ventasResumen;
-        document.getElementById('dash-ventas-dinero').innerText = "$" + Math.round(v.dinero).toLocaleString();
+        
+        document.getElementById('dash-ventas-dinero').innerText = "$" + Math.round(v.dineroTotal).toLocaleString();
+        document.getElementById('dash-ventas-efectivo').innerText = "$" + Math.round(v.efectivo).toLocaleString();
+        document.getElementById('dash-ventas-tarjeta').innerText = "$" + Math.round(v.tarjeta).toLocaleString();
+        document.getElementById('dash-ventas-credito').innerText = "$" + Math.round(v.credito).toLocaleString();
         document.getElementById('dash-ventas-galones').innerText = Math.round(v.galones) + " Gal";
         document.getElementById('dash-ventas-conteo').innerText = v.conteo;
 
