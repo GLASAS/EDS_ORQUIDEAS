@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyOMklWqb5HgXe-5TQ5ctSetAmjfztHNovshFXFQzgvAJ-10clTNv0KOjj_V7JWqJBw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyJR4Ap051cFUAlrtFPh9bfPmGlFR7zq68itPjXcTUDth9WtuGfwwIMH6hAt2ODoODd/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -54,7 +54,6 @@ async function sincronizarDatosGlobales() {
     try {
         let todo = await ejecutarAPI({ accion: 'obtenerDatosIniciales', filtroVentas: filtroActualDashboard });
         
-        // Actualización dinámica de la versión del sistema
         if (todo.versionSistema) {
             let elLogin = document.getElementById('lbl-version-login');
             let elSidebar = document.getElementById('lbl-version-sidebar');
@@ -393,6 +392,37 @@ function actualizarItemsCompraSelect() {
     }
 }
 
+// 🛒 MANEJADOR DE ORDEN DE COMPRA DESDE LA INTERFAZ
+async function handleCompra(event) {
+    event.preventDefault();
+    let proveedorID = document.getElementById('compra-proveedor').value;
+    let tipoItem = document.getElementById('compra-tipo-item').value;
+    let itemID = document.getElementById('compra-item').value;
+    let cantidad = document.getElementById('compra-cantidad').value;
+    let precioUnitario = document.getElementById('compra-precio').value;
+    let fechaEsperada = document.getElementById('compra-fecha').value;
+    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
+
+    try {
+        let res = await ejecutarAPI({
+            accion: 'registrarCompra',
+            proveedorID,
+            tipoItem,
+            itemID,
+            cantidad,
+            precioUnitario,
+            fechaEsperada,
+            usuario: nombreUsuario
+        });
+        mostrarNotificacion(res.mensaje, 'success');
+        document.getElementById('form-compra').reset();
+        sincronizarDatosGlobales();
+        mostrarSeccion('dashboard');
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
 function renderizarEstadoCaja(res) {
     let lbl = document.getElementById('lbl-estado-caja');
     let divAbrir = document.getElementById('div-abrir-caja');
@@ -480,7 +510,7 @@ function renderizarCuentasPorPagar(cuentas) {
             hayAlertasUrgentes = true;
             alertasContainer.innerHTML += `
                 <div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 10px;">
-                    <p><span class="badge red">⚠️️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
+                    <p><span class="badge red">⚠️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
                     <p style="margin-top: 5px; color: var(--red); font-weight: bold;">${c.mensajeAlerta} Límite: ${c.fechaLimite} - Valor: $${Math.round(c.valor).toLocaleString()}</p>
                 </div>
             `;
