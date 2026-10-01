@@ -118,7 +118,9 @@ function cerrarSesion() {
 function mostrarSeccion(seccionId, event) {
     if (event) event.preventDefault();
     document.querySelectorAll('.seccion').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.sidebar nav a').forEach(a => {
+        if(!a.classList.contains('btn-salir-modulo')) a.classList.remove('active');
+    });
     
     if (seccionId === 'dashboard') {
         document.getElementById('sec-dashboard').classList.add('active');
@@ -163,7 +165,9 @@ function mostrarSeccion(seccionId, event) {
         document.getElementById('sec-inventario').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Inv. Combustible";
     }
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    if (event && event.currentTarget && !event.currentTarget.classList.contains('btn-salir-modulo')) {
+        event.currentTarget.classList.add('active');
+    }
 }
 
 function cambiarFiltroDashboard(filtro, event) {
