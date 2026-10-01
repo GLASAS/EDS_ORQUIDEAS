@@ -21,6 +21,17 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 .sidebar nav a { color: #94a3b8; text-decoration: none; padding: 10px 15px; border-radius: 8px; transition: 0.2s; font-size: 0.9rem; }
 .sidebar nav a:hover, .sidebar nav a.active { background-color: var(--accent); color: white; }
 
+/* Botón de salir integrado en los módulos con el color azul/rojo distintivo */
+.btn-salir-modulo {
+    margin-top: 15px;
+    background-color: #ef4444 !important;
+    color: white !important;
+    font-weight: 600;
+}
+.btn-salir-modulo:hover {
+    background-color: #dc2626 !important;
+}
+
 .sidebar-footer { padding: 15px; border-top: 1px solid #334155; text-align: center; font-size: 0.75rem; color: #94a3b8; }
 .compat-info { margin-top: 4px; font-size: 0.65rem; color: #64748b; }
 
@@ -50,18 +61,6 @@ body { background-color: var(--bg-color); color: var(--text-main); }
     background: #e2e8f0;
     transform: rotate(45deg);
 }
-
-.btn-salir-header {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-.btn-salir-header:hover { opacity: 0.9; }
 
 .seccion { display: none; padding: 30px; }
 .seccion.active { display: block; }
