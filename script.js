@@ -1,17 +1,20 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwv-ZhlaLxfEFhL6lsi8r9CgqRCRJwLa5jt_aWT-vCfcQo9WToJh49Nr4efWzdEaEK1/exec";
-const VERSION_SISTEMA = "V.1140"; // <--- CAMBIA AQUÍ LA VERSIÓN CUANDO LO DESEES
+const API_URL = "https://script.google.com/macros/s/AKfycby1EAEtmlQ0G1T6nyzcxGkXwIYZMAOZstBm0S-bRhTt6lOgqsrQdzgW0rWfNB08eBq5/exec";
+const VERSION_SISTEMA = "V.1145"; // <--- CAMBIA AQUÍ LA VERSIÓN CUANDO LO DESEES
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
 let usuarioActual = null;
 let filtroActualDashboard = 'hoy';
 
-// Aplicar versión al cargar el script
+// Aplicar versión y limpiar formulario de login al iniciar
 document.addEventListener("DOMContentLoaded", () => {
     let elLogin = document.getElementById('lbl-version-login');
     let elSidebar = document.getElementById('lbl-version-sidebar');
     if (elLogin) elLogin.innerText = `Version ${VERSION_SISTEMA}`;
     if (elSidebar) elSidebar.innerText = `FuelManager ${VERSION_SISTEMA}`;
+    
+    let formLogin = document.getElementById('form-login');
+    if (formLogin) formLogin.reset();
 });
 
 async function ejecutarAPI(payload) {
@@ -135,6 +138,9 @@ async function handleCambiarPassword(event) {
 
 function cerrarSesion() {
     usuarioActual = null;
+    let formLogin = document.getElementById('form-login');
+    if (formLogin) formLogin.reset();
+
     document.getElementById('app-main').style.display = 'none';
     document.getElementById('login-container').style.display = 'flex';
     mostrarNotificacion("Sesión cerrada correctamente.", 'success');
