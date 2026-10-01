@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyzJlhbAe6ZWSz47IAngPrrJLEiuP4A3ZbOrsL0yIT68AFC6O4TZCTXbThB63cvmds4/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzGPKjDTyaM2UvtKyGyineqFUEd77jkIp6lu6GBtUr48Kywxp-d4_dJPCZff9JtkJUs/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -251,7 +251,8 @@ async function cargarSurtidoresSelect() {
         let select = document.getElementById('venta-surtidor');
         select.innerHTML = '<option value="">-- Seleccione un Surtidor --</option>';
         surts.forEach(s => {
-            select.innerHTML += `<option value="${s.ID}">${s.Nombre} (${s.CombustibleNombre} - Isla: ${s.IslaID})</option>`;
+            // Muestra claramente el nombre (Ej: Isla 1 - Cara 1) y el combustible (Ej: ACPM)
+            select.innerHTML += `<option value="${s.ID}">${s.Nombre} (${s.CombustibleNombre})</option>`;
         });
         actualizarInfoSurtidor();
     } catch (err) {
