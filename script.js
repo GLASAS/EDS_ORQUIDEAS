@@ -1,5 +1,5 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxDnaqE2VRH73W6N1ekvxCg-tqqNHmJ7kcN_8i48aNTMvMzMOqYBNDDREpZuIgwayMv/exec";
-const VERSION_SISTEMA = "V.1201"; // <--- Actualizado para reflejar la mejora
+const VERSION_SISTEMA = "V.1210"; // <--- Versión actualizada
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -488,7 +488,10 @@ async function handleCompra(event) {
             usuario: nombreUsuario
         });
         mostrarNotificacion(res.mensaje, 'success');
+        
+        // 🧹 RESTABLECER LAS CASILLAS DEL FORMULARIO DE COMPRA
         document.getElementById('form-compra').reset();
+        
         sincronizarDatosGlobales();
         mostrarSeccion('dashboard');
     } catch (err) {
@@ -781,7 +784,7 @@ function renderizarReportesyAlertas(rep, alertas) {
             contenedorAlertas.innerHTML = "<p style='color: var(--green);'>✅ No hay alertas activas en el sistema.</p>";
         } else {
             alertas.forEach(a => {
-                contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️️ ${a.mensaje}</p></div>`;
+                contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️ ${a.mensaje}</p></div>`;
             });
         }
     }
