@@ -139,15 +139,17 @@ body { background-color: var(--bg-color); color: var(--text-main); }
 /* Botones compactos y modernos para tablas */
 .btn-accion-tabla {
     border: none;
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.2s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: auto !important;
+    min-width: 70px;
 }
 .btn-accion-tabla:hover {
     opacity: 0.85;
