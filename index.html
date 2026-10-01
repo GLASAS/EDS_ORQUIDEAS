@@ -14,6 +14,12 @@
     <link rel="stylesheet" href="Styles.css">
 </head>
 <body>
+    <!-- INDICADOR DE CARGA / SINCRONIZACIÓN -->
+    <div id="loading-indicator" class="loading-bar-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <span>Actualizando información desde la nube...</span>
+    </div>
+
     <!-- PANTALLA DE LOGIN -->
     <div id="login-container" class="login-overlay">
         <div class="login-card">
@@ -34,7 +40,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V701</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V10</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -85,7 +91,6 @@
                 <a href="#" onclick="mostrarSeccion('usuarios', event)">👥 Gestión de Usuarios</a>
                 <a href="#" onclick="mostrarSeccion('reportes', event)">📈 Reportes & Alertas</a>
                 <a href="#" onclick="mostrarSeccion('inventario', event)">📋 Inv. Combustible</a>
-                <!-- Botón de Salir integrado en la barra de módulos con el estilo azul -->
                 <a href="#" onclick="cerrarSesion()" class="btn-salir-modulo">🚪 Salir del Sistema</a>
             </nav>
             <div class="sidebar-footer">
