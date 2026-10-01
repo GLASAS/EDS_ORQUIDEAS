@@ -1,750 +1,603 @@
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var accion = data.accion;
-    var resultado = {};
-
-    if (accion === 'verificarUsuario') {
-      resultado = verificarUsuario(data);
-    } else if (accion === 'cambiarPassword') {
-      resultado = cambiarPassword(data);
-    } else if (accion === 'obtenerDatosIniciales') {
-      resultado = obtenerDatosIniciales(data);
-    } else if (accion === 'obtenerDashboard') {
-      resultado = obtenerDashboard(data);
-    } else if (accion === 'obtenerSurtidores') {
-      resultado = obtenerSurtidores();
-    } else if (accion === 'registrarVentaPorGalones') {
-      resultado = registrarVentaPorGalones(data);
-    } else if (accion === 'registrarVentaProducto') {
-      resultado = registrarVentaProducto(data);
-    } else if (accion === 'actualizarPrecioCombustible') {
-      resultado = actualizarPrecioCombustible(data);
-    } else if (accion === 'obtenerHistorialPrecios') {
-      resultado = obtenerHistorialPrecios();
-    } else if (accion === 'obtenerProductos') {
-      resultado = obtenerProductos();
-    } else if (accion === 'obtenerProveedores') {
-      resultado = obtenerProveedores();
-    } else if (accion === 'registrarProveedor') {
-      resultado = registrarProveedor(data);
-    } else if (accion === 'registrarCompra') {
-      resultado = registrarCompra(data);
-    } else if (accion === 'obtenerEstadoCaja') {
-      resultado = obtenerEstadoCaja();
-    } else if (accion === 'abrirCaja') {
-      resultado = abrirCaja(data);
-    } else if (accion === 'registrarSobreSeguridad') {
-      resultado = registrarSobreSeguridad(data);
-    } else if (accion === 'cerrarCaja') {
-      resultado = cerrarCaja(data);
-    } else if (accion === 'registrarGasto') {
-      resultado = registrarGasto(data);
-    } else if (accion === 'obtenerCuentasPorPagar') {
-      resultado = obtenerCuentasPorPagar();
-    } else if (accion === 'registrarCuentaPorPagar') {
-      resultado = registrarCuentaPorPagar(data);
-    } else if (accion === 'pagarCuenta') {
-      resultado = pagarCuenta(data);
-    } else if (accion === 'obtenerClientes') {
-      resultado = obtenerClientes();
-    } else if (accion === 'registrarCliente') {
-      resultado = registrarCliente(data);
-    } else if (accion === 'obtenerUsuarios') {
-      resultado = obtenerUsuarios();
-    } else if (accion === 'registrarUsuario') {
-      resultado = registrarUsuario(data);
-    } else if (accion === 'cambiarEstadoUsuario') {
-      resultado = cambiarEstadoUsuario(data);
-    } else if (accion === 'eliminarUsuario') {
-      resultado = eliminarUsuario(data);
-    } else if (accion === 'obtenerReportes') {
-      resultado = obtenerReportes();
-    } else if (accion === 'obtenerAlertas') {
-      resultado = obtenerAlertas();
-    } else if (accion === 'registrarMovimientoInventario') {
-      resultado = registrarMovimientoInventario(data);
-    } else {
-      throw new Error("Acción no válida");
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ success: true, data: resultado }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ success: false, message: error.message }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function obtenerDatosIniciales(data) {
-    return {
-        versionSistema: "V1050",
-        dashboard: obtenerDashboard(data),
-        surtidores: obtenerSurtidores(),
-        productos: obtenerProductos(),
-        proveedores: obtenerProveedores(),
-        estadoCaja: obtenerEstadoCaja(),
-        clientes: obtenerClientes(),
-        cuentasPorPagar: obtenerCuentasPorPagar(),
-        usuarios: obtenerUsuarios(),
-        reportes: obtenerReportes(),
-        alertas: obtenerAlertas(),
-        historialPrecios: obtenerHistorialPrecios()
-    };
-}
-
-function verificarUsuario(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Usuarios");
-    if (!hoja) throw new Error("La hoja Usuarios no existe.");
-    var datos = hoja.getDataRange().getValues();
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][2]).trim() === String(data.cedula).trim() && String(datos[i][3]).trim() === String(data.password).trim()) {
-            var estado = datos[i][5] || "Activo";
-            if (estado.toUpperCase() === "INACTIVO") {
-                throw new Error("Este usuario se encuentra inactivo.");
-            }
-            return { nombre: datos[i][1], rol: datos[i][4] };
-        }
-    }
-    throw new Error("Cédula o contraseña incorrecta.");
-}
-
-function cambiarPassword(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Usuarios");
-    var datos = hoja.getDataRange().getValues();
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][2]).trim() === String(data.cedula).trim()) {
-            hoja.getRange(i + 1, 4).setValue(data.nuevaPassword);
-            return { mensaje: "Contraseña actualizada con éxito." };
-        }
-    }
-    throw new Error("No se encontró el usuario con esa cédula.");
-}
-
-function obtenerUsuarios() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Usuarios");
-    if (!hoja) return [];
-    var datos = hoja.getDataRange().getValues();
-    var lista = [];
-    for (var i = 1; i < datos.length; i++) {
-        if (datos[i][0]) {
-            lista.push({ 
-                id: datos[i][0], 
-                nombre: datos[i][1], 
-                cedula: datos[i][2], 
-                rol: datos[i][4], 
-                estado: datos[i][5] || "Activo" 
-            });
-        }
-    }
-    return lista;
-}
-
-function registrarUsuario(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Usuarios");
-    if (!hoja) {
-        hoja = ss.insertSheet("Usuarios");
-        hoja.appendRow(["ID", "Nombre", "Cedula", "Password", "Rol", "Estado", "FechaExpedicionCedula"]);
-    }
-    var idNuevo = "USR-" + (hoja.getLastRow());
-    hoja.appendRow([idNuevo, data.nombre, data.cedula, data.password, data.rol, "Activo", data.fechaExpedicion]);
-    return { mensaje: "Usuario registrado con éxito." };
-}
-
-function cambiarEstadoUsuario(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Usuarios");
-    var datos = hoja.getDataRange().getValues();
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][0]).trim() === String(data.id).trim()) {
-            var estadoActual = String(datos[i][5] || "Activo").trim();
-            var nuevoEstado = estadoActual.toUpperCase() === "ACTIVO" ? "Inactivo" : "Activo";
-            hoja.getRange(i + 1, 6).setValue(nuevoEstado);
-            return { mensaje: "Estado actualizado a " + nuevoEstado };
-        }
-    }
-    throw new Error("Usuario no encontrado.");
-}
-
-function eliminarUsuario(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Usuarios");
-    var datos = hoja.getDataRange().getValues();
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][0]).trim() === String(data.id).trim()) {
-            hoja.deleteRow(i + 1);
-            return { mensaje: "Usuario eliminado correctamente." };
-        }
-    }
-    throw new Error("Usuario no encontrado.");
-}
-
-function obtenerProductos() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Productos");
-    if (!hoja) return [];
-    var datos = hoja.getDataRange().getValues();
-    var lista = [];
-    for (var i = 1; i < datos.length; i++) {
-        if (datos[i][0]) {
-            lista.push({
-                ID: datos[i][0], 
-                Codigo: datos[i][1], 
-                Nombre: datos[i][3], 
-                Categoria: datos[i][4],
-                PrecioVenta: Number(datos[i][8]) || 0, 
-                Stock: Number(datos[i][9]) || 0, 
-                StockMinimo: Number(datos[i][10]) || 0, 
-                Ubicacion: datos[i][12], 
-                Unidad: datos[i][6] || "Unidades"
-            });
-        }
-    }
-    return lista;
-}
-
-function registrarVentaProducto(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hojaProductos = ss.getSheetByName("Productos");
-    if (!hojaProductos) throw new Error("La hoja Productos no existe.");
-    var datos = hojaProductos.getDataRange().getValues();
-    var filaProducto = -1;
-    var stockActual = 0;
-    var precioVenta = 0;
-
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][0]).trim() === String(data.productoID).trim()) {
-            filaProducto = i + 1;
-            stockActual = Number(datos[i][9]) || 0;
-            precioVenta = Number(datos[i][8]) || 0;
-            break;
-        }
-    }
-
-    if (filaProducto === -1) throw new Error("Producto no encontrado.");
-    var cantidadVendida = Number(data.cantidad) || 0;
-    if (cantidadVendida <= 0) throw new Error("Cantidad no válida.");
-    if (stockActual < cantidadVendida) throw new Error("Stock insuficiente. Disponible: " + stockActual);
-
-    var nuevoStock = stockActual - cantidadVendida;
-    hojaProductos.getRange(filaProducto, 10).setValue(nuevoStock);
-
-    var hojaMov = ss.getSheetByName("Movimientos_Productos");
-    if (!hojaMov) {
-        hojaMov = ss.insertSheet("Movimientos_Productos");
-        hojaMov.appendRow(["ID", "Fecha", "ProductoID", "Tipo", "Cantidad", "Usuario", "Observaciones"]);
-    }
-    var movID = "MOV-" + new Date().getTime();
-    hojaMov.appendRow([movID, new Date(), data.productoID, "VENTA", cantidadVendida, data.usuario, data.observaciones || ""]);
-
-    return { mensaje: "Venta de producto registrada con éxito.", nuevoStock: nuevoStock, total: cantidadVendida * precioVenta };
-}
-
-function obtenerProveedores() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Proveedores");
-    if (!hoja) {
-        hoja = ss.insertSheet("Proveedores");
-        hoja.appendRow(["ID", "Nombre", "NIT", "Contacto", "Telefono", "Email", "Direccion", "Estado"]);
-        return [];
-    }
-    var datos = hoja.getDataRange().getValues();
-    var lista = [];
-    for (var i = 1; i < datos.length; i++) {
-        if (datos[i][0]) {
-            lista.push({
-                ID: datos[i][0], Nombre: datos[i][1], NIT: datos[i][2], Contacto: datos[i][3],
-                Telefono: datos[i][4], Email: datos[i][5], Direccion: datos[i][6]
-            });
-        }
-    }
-    return lista;
-}
-
-function registrarProveedor(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Proveedores");
-    if (!hoja) {
-        hoja = ss.insertSheet("Proveedores");
-        hoja.appendRow(["ID", "Nombre", "NIT", "Contacto", "Telefono", "Email", "Direccion", "Estado"]);
-    }
-    var id = "PROV-" + new Date().getTime();
-    hoja.appendRow([id, data.nombre, data.nit, data.contacto, data.telefono, data.email, data.direccion, "Activo"]);
-    return { mensaje: "Proveedor registrado con éxito." };
-}
-
-function obtenerClientes() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Clientes");
-    if (!hoja) {
-        hoja = ss.insertSheet("Clientes");
-        hoja.appendRow(["ID", "Nombre", "NIT_CC", "Telefono", "Email", "TipoCliente", "Estado"]);
-        return [];
-    }
-    var datos = hoja.getDataRange().getValues();
-    var lista = [];
-    for (var i = 1; i < datos.length; i++) {
-        if (datos[i][0]) {
-            lista.push({
-                ID: datos[i][0], Nombre: datos[i][1], NIT_CC: datos[i][2],
-                Telefono: datos[i][3], Email: datos[i][4], TipoCliente: datos[i][5] || "General"
-            });
-        }
-    }
-    return lista;
-}
-
-function registrarCliente(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Clientes");
-    if (!hoja) {
-        hoja = ss.insertSheet("Clientes");
-        hoja.appendRow(["ID", "Nombre", "NIT_CC", "Telefono", "Email", "TipoCliente", "Estado"]);
-    }
-    var id = "CLI-" + new Date().getTime();
-    hoja.appendRow([id, data.nombre, data.nitCC, data.telefono, data.email, data.tipoCliente, "Activo"]);
-    return { mensaje: "Cliente registrado con éxito." };
-}
-
-function obtenerCuentasPorPagar() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("CuentasPorPagar");
-    if (!hoja) {
-        hoja = ss.insertSheet("CuentasPorPagar");
-        hoja.appendRow(["ID", "Tercero", "Concepto", "Valor", "FechaLimite", "Estado", "Usuario"]);
-        return [];
-    }
-    var datos = hoja.getDataRange().getValues();
-    var lista = [];
-    var hoy = new Date();
-    hoy.setHours(0,0,0,0);
-
-    for (var i = 1; i < datos.length; i++) {
-        if (datos[i][0]) {
-            var rawFecha = datos[i][4];
-            var fechaLim = new Date(rawFecha);
-            if (isNaN(fechaLim.getTime())) {
-                fechaLim = new Date();
-            }
-            fechaLim.setHours(0,0,0,0);
-            
-            var diferenciaDias = Math.ceil((fechaLim - hoy) / (1000 * 60 * 60 * 24));
-            var estadoPago = String(datos[i][5] || "PENDIENTE").trim();
-            var alertaUrgente = false;
-            var mensajeAlerta = "";
-
-            if (estadoPago === "PENDIENTE") {
-                if (diferenciaDias < 0) {
-                    alertaUrgente = true;
-                    mensajeAlerta = "¡VENCIDA! Han pasado " + Math.abs(diferenciaDias) + " días.";
-                } else if (diferenciaDias === 0) {
-                    alertaUrgente = true;
-                    mensajeAlerta = "¡VENCE HOY!";
-                } else if (diferenciaDias <= 2) {
-                    alertaUrgente = true;
-                    mensajeAlerta = "¡URGENTE! Quedan " + diferenciaDias + " días para pagar.";
-                }
-            }
-
-            lista.push({
-                id: String(datos[i][0]),
-                tercero: String(datos[i][1]),
-                concepto: String(datos[i][2]),
-                valor: Number(datos[i][3]) || 0,
-                fechaLimite: String(rawFecha).split('T')[0],
-                diasRestantes: diferenciaDias,
-                estado: estadoPago,
-                alertaUrgente: alertaUrgente,
-                mensajeAlerta: mensajeAlerta
-            });
-        }
-    }
-    return lista;
-}
-
-function registrarCuentaPorPagar(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("CuentasPorPagar");
-    if (!hoja) {
-        hoja = ss.insertSheet("CuentasPorPagar");
-        hoja.appendRow(["ID", "Tercero", "Concepto", "Valor", "FechaLimite", "Estado", "Usuario"]);
-    }
-    var id = "CXP-" + new Date().getTime();
-    hoja.appendRow([id, data.tercero, data.concepto, data.valor, data.fechaLimite, "PENDIENTE", data.usuario]);
-    return { mensaje: "Cuenta por pagar registrada con éxito." };
-}
-
-function pagarCuenta(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("CuentasPorPagar");
-    var datos = hoja.getDataRange().getValues();
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][0]).trim() === String(data.id).trim()) {
-            hoja.getRange(i + 1, 6).setValue("PAGADO");
-            return { mensaje: "Cuenta marcada como pagada con éxito." };
-        }
-    }
-    throw new Error("No se encontró la cuenta por pagar.");
-}
-
-function obtenerEstadoCaja() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Caja");
-    if (!hoja) {
-        hoja = ss.insertSheet("Caja");
-        hoja.appendRow(["TurnoID", "FechaApertura", "BaseInicial", "TotalEfectivoVentas", "TotalSobresBuzon", "CantidadSobres", "Estado", "FechaCierre", "TotalReal", "Diferencia", "Usuario"]);
-        return { estado: "CERRADA" };
-    }
-    var datos = hoja.getDataRange().getValues();
-    for (var i = datos.length - 1; i >= 1; i--) {
-        if (String(datos[i][6]).trim() === "ABIERTA") {
-            return {
-                turnoID: datos[i][0], fechaApertura: datos[i][1], baseInicial: Number(datos[i][2]) || 0,
-                totalSobresBuzon: Number(datos[i][4]) || 0, cantidadSobres: Number(datos[i][5]) || 0, estado: "ABIERTA"
-            };
-        }
-    }
-    return { estado: "CERRADA" };
-}
-
-function abrirCaja(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Caja");
-    if (!hoja) {
-        hoja = ss.insertSheet("Caja");
-        hoja.appendRow(["TurnoID", "FechaApertura", "BaseInicial", "TotalEfectivoVentas", "TotalSobresBuzon", "CantidadSobres", "Estado", "FechaCierre", "TotalReal", "Diferencia", "Usuario"]);
-    }
-    var turnoID = "TURNO-" + new Date().getTime();
-    hoja.appendRow([turnoID, new Date(), data.baseInicial, 0, 0, 0, "ABIERTA", "", "", "", data.usuario]);
-    return { mensaje: "Caja abierta con éxito." };
-}
-
-function registrarSobreSeguridad(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Caja");
-    var datos = hoja.getDataRange().getValues();
-    var filaAbierta = -1;
-    for (var i = datos.length - 1; i >= 1; i--) {
-        if (String(datos[i][6]).trim() === "ABIERTA") { filaAbierta = i + 1; break; }
-    }
-    if (filaAbierta === -1) throw new Error("No hay turno abierto.");
-    var sobresActuales = Number(hoja.getRange(filaAbierta, 6).getValue()) || 0;
-    var dineroSobresActual = Number(hoja.getRange(filaAbierta, 5).getValue()) || 0;
-    hoja.getRange(filaAbierta, 5).setValue(dineroSobresActual + Number(data.valorSobre));
-    hoja.getRange(filaAbierta, 6).setValue(sobresActuales + 1);
-    return { mensaje: "Sobre depositado en buzón correctamente." };
-}
-
-function cerrarCaja(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Caja");
-    var datos = hoja.getDataRange().getValues();
-    var filaAbierta = -1;
-    for (var i = datos.length - 1; i >= 1; i--) {
-        if (String(datos[i][6]).trim() === "ABIERTA") { filaAbierta = i + 1; break; }
-    }
-    if (filaAbierta === -1) throw new Error("No hay turno abierto.");
-    var baseInicial = Number(hoja.getRange(filaAbierta, 3).getValue()) || 0;
-    var totalSobres = Number(hoja.getRange(filaAbierta, 5).getValue()) || 0;
-    var totalEsperado = baseInicial + totalSobres;
-    var totalReal = Number(data.totalReal);
-    var diferencia = totalReal - totalEsperado;
-
-    hoja.getRange(filaAbierta, 7).setValue("CERRADA");
-    hoja.getRange(filaAbierta, 8).setValue(new Date());
-    hoja.getRange(filaAbierta, 9).setValue(totalReal);
-    hoja.getRange(filaAbierta, 10).setValue(diferencia);
-    return { totalEsperado: totalEsperado, diferencia: diferencia };
-}
-
-function obtenerDashboard(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hojaCombs = ss.getSheetByName("Combustibles");
-    var hojaVentas = ss.getSheetByName("Ventas");
-    var ventasDineroEfectivo = 0, ventasDineroTarjeta = 0, ventasDineroCredito = 0, ventasGalones = 0, ventasConteo = 0;
-
-    var galonesVendidosPorCombustible = {};
-
-    if (hojaVentas) {
-        var datosVentas = hojaVentas.getDataRange().getValues();
-        var ahora = new Date();
-        var filtro = data && data.filtroVentas ? data.filtroVentas : 'hoy';
-        for (var v = 1; v < datosVentas.length; v++) {
-            var filaFecha = new Date(datosVentas[v][1]);
-            if (!isNaN(filaFecha.getTime())) {
-                var esValido = false;
-                if (filtro === 'hoy' && filaFecha.toDateString() === ahora.toDateString()) esValido = true;
-                else if (filtro === 'ayer') {
-                    var ayer = new Date(); ayer.setDate(ahora.getDate() - 1);
-                    if (filaFecha.toDateString() === ayer.toDateString()) esValido = true;
-                } else if (filtro !== 'hoy' && filtro !== 'ayer') esValido = true;
-
-                if (esValido) {
-                    var galonesVenta = Number(datosVentas[v][4]) || 0;
-                    var totalVenta = Number(datosVentas[v][6]) || 0;
-                    var medioPago = String(datosVentas[v][7]).trim().toUpperCase();
-                    var combIDVenta = String(datosVentas[v][3]).trim().toUpperCase();
-
-                    galonesVendidosPorCombustible[combIDVenta] = (galonesVendidosPorCombustible[combIDVenta] || 0) + galonesVenta;
-
-                    ventasGalones += galonesVenta; ventasConteo++;
-                    if (medioPago.includes('EFECTIVO')) ventasDineroEfectivo += totalVenta;
-                    else if (medioPago.includes('TARJETA') || medioPago.includes('TRANSFERENCIA')) ventasDineroTarjeta += totalVenta;
-                    else ventasDineroCredito += totalVenta;
-                }
-            }
-        }
-    }
-
-    var combs = hojaCombs ? hojaCombs.getDataRange().getValues() : [];
-    var combustibles = [];
-    for (var i = 1; i < combs.length; i++) {
-        if (!combs[i][0]) continue;
-        var cID = String(combs[i][0]).trim();
-        var cNombre = String(combs[i][1]).trim();
-        var stockBase = Number(combs[i][7]) || 0;
-        
-        var galonesSalida = galonesVendidosPorCombustible[cID.toUpperCase()] || 
-                            galonesVendidosPorCombustible[cNombre.toUpperCase()] || 0;
-                            
-        if (cID === "C001") galonesSalida += (galonesVendidosPorCombustible["ACPM"] || 0);
-        if (cID === "C002") galonesSalida += (galonesVendidosPorCombustible["GASOLINA CORRIENTE"] || galonesVendidosPorCombustible["GASOLINA"] || 0);
-
-        var stockActualReal = Math.max(0, stockBase - galonesSalida);
-
-        var capacidadMax = Number(combs[i][10]) || 2450;
-        var stockMin = Number(combs[i][8]) || 500;
-
-        combustibles.push({
-            ID: cID, 
-            Nombre: cNombre, 
-            StockActual: stockActualReal,
-            Unidad: "Gal", 
-            StockMinimo: stockMin, 
-            CapacidadMaxima: capacidadMax,
-            porcentajeLlenado: Math.min(100, Math.max(0, (stockActualReal / capacidadMax) * 100)).toFixed(1),
-            estadoAlerta: stockActualReal <= stockMin ? "CRÍTICO" : "NORMAL",
-            colorEstado: stockActualReal <= stockMin ? "red" : "green",
-            diasCobertura: 10, 
-            cantidadSugerida: Math.max(0, capacidadMax - stockActualReal)
-        });
-    }
-
-    return {
-        ventasResumen: { dineroTotal: ventasDineroEfectivo + ventasDineroTarjeta + ventasDineroCredito, efectivo: ventasDineroEfectivo, tarjeta: ventasDineroTarjeta, credito: ventasDineroCredito, galones: ventasGalones, conteo: ventasConteo },
-        combustibles: combustibles
-    };
-}
-
-function obtenerSurtidores() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Surtidores");
-    var hojaCombs = ss.getSheetByName("Combustibles");
-    if (!hoja) return [];
-    var datos = hoja.getDataRange().getValues();
-    var combs = hojaCombs ? hojaCombs.getDataRange().getValues() : [];
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDS ORQUIDEAS - Gestión Estación de Servicio</title>
     
-    var preciosCombustibles = {};
-    for (var j = 1; j < combs.length; j++) {
-        if (combs[j][0]) {
-            var cID = String(combs[j][0]).trim();
-            var cNombre = String(combs[j][1]).trim().toLowerCase();
-            var cPrecio = Number(combs[j][6]) || 14000;
-            preciosCombustibles[cID] = cPrecio;
-            preciosCombustibles[cNombre] = cPrecio;
-        }
-    }
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FuelManager">
 
-    var lista = [];
-    for (var i = 1; i < datos.length; i++) {
-        if (!datos[i][0]) continue;
-        var surtID = String(datos[i][0]).trim();
-        var islaID = String(datos[i][1]).trim();
-        var nombreSurt = String(datos[i][2]).trim();
-        
-        var combID = "C001";
-        var combNombre = "ACPM";
-        var precioVenta = 14000;
+    <link rel="stylesheet" href="Styles.css">
+</head>
+<body>
+    <!-- INDICADOR DE CARGA / SINCRONIZACIÓN -->
+    <div id="loading-indicator" class="loading-bar-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <span>Actualizando información...</span>
+    </div>
 
-        if (surtID.toUpperCase().includes("GAS") || nombreSurt.toUpperCase().includes("GASOLINA")) {
-            combID = "C002";
-            combNombre = "Gasolina Corriente";
-            precioVenta = preciosCombustibles["C002"] || preciosCombustibles["gasolina corriente"] || 16000;
-        } else {
-            precioVenta = preciosCombustibles["C001"] || preciosCombustibles["acpm"] || 14000;
-        }
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-container" class="login-overlay">
+        <div class="login-card">
+            <h2>Login <br> EDS ORQUIDEAS </h2>
+            <p>Ingrese su número de cédula y contraseña:</p>
+            <form id="form-login" onsubmit="handleLogin(event)">
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Número de Cédula:</label>
+                    <input type="text" id="login-cedula" required placeholder="Ingrese su cédula">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña:</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Ingresar al Sistema</button>
+            </form>
+            <div style="margin-top: 12px; text-align: right;">
+                <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
+            </div>
+            <div class="login-footer">
+                <p>EDS ORQUIDEAS <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1050</span></p>
+                <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
+            </div>
+        </div>
+    </div>
 
-        lista.push({ 
-            ID: surtID, 
-            IslaID: islaID, 
-            Nombre: nombreSurt, 
-            CombustibleID: combID, 
-            CombustibleNombre: combNombre, 
-            PrecioVenta: precioVenta, 
-            LecturaActual: 0 
-        });
-    }
-    return lista;
-}
+    <!-- MODAL RECUPERACIÓN / CAMBIO DE CONTRASEÑA -->
+    <div id="modal-recuperacion" class="login-overlay" style="display: none;">
+        <div class="login-card">
+            <h2>Restablecer Contraseña</h2>
+            <p>Valide su identidad con su cédula y fecha de expedición:</p>
+            <form onsubmit="handleCambiarPassword(event)">
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Número de Cédula:</label>
+                    <input type="text" id="rec-cedula" required placeholder="Ingrese su cédula">
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Expedición de la Cédula:</label>
+                    <input type="date" id="rec-fecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Contraseña:</label>
+                    <input type="password" id="rec-nuevo-pass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Actualizar Contraseña</button>
+            </form>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="#" onclick="ocultarModalRecuperacion(event)" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">Volver al Login</a>
+            </div>
+        </div>
+    </div>
 
-function registrarVentaPorGalones(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hojaCombs = ss.getSheetByName("Combustibles");
-    var combs = hojaCombs ? hojaCombs.getDataRange().getValues() : [];
-    var precioUnitario = 14000;
-    
-    var hojaSurtidores = ss.getSheetByName("Surtidores");
-    var surts = hojaSurtidores ? hojaSurtidores.getDataRange().getValues() : [];
-    var combIDVenta = "C001";
-    
-    for(var s=1; s<surts.length; s++) {
-        if(String(surts[s][0]).trim() === String(data.surtidorID).trim()) {
-            var surtIDStr = String(surts[s][0]).toUpperCase();
-            var surtNomStr = String(surts[s][2]).toUpperCase();
-            if(surtIDStr.includes("GAS") || surtNomStr.includes("GASOLINA")) {
-                combIDVenta = "C002";
-            }
-            break;
-        }
-    }
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div class="app-container" id="app-main" style="display: none;">
+        <!-- Menú Lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>FuelManager</h2>
+            </div>
+            <nav>
+                <a href="#" class="active" onclick="mostrarSeccion('dashboard', event)">📊 Dashboard</a>
+                <a href="#" onclick="mostrarSeccion('ventas', event)">⛽ Ventas Pista</a>
+                <a href="#" onclick="mostrarSeccion('precios', event)">💲 Precios Combustible</a>
+                <a href="#" onclick="mostrarSeccion('productos', event)">🛒 Productos Tienda</a>
+                <a href="#" onclick="mostrarSeccion('compras', event)">📦 Compras / Abastec.</a>
+                <a href="#" onclick="mostrarSeccion('caja', event)">💵 Caja y Turnos</a>
+                <a href="#" onclick="mostrarSeccion('gastos', event)">💸 Gastos Operativos</a>
+                <a href="#" onclick="mostrarSeccion('cuentas-pagar', event)">💳 Cuentas por Pagar</a>
+                <a href="#" onclick="mostrarSeccion('clientes', event)">👥 Clientes</a>
+                <a href="#" onclick="mostrarSeccion('proveedores', event)">🏢 Proveedores</a>
+                <a href="#" onclick="mostrarSeccion('usuarios', event)">👥 Gestión de Usuarios</a>
+                <a href="#" onclick="mostrarSeccion('reportes', event)">📈 Reportes & Alertas</a>
+                <a href="#" onclick="mostrarSeccion('inventario', event)">📋 Inv. Combustible</a>
+                <a href="#" onclick="cerrarSesion()" class="btn-salir-modulo">🚪 Salir del Sistema</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Copyright © 2026 <span id="lbl-version-sidebar">FuelManager V1050</span></p>
+                <p class="compat-info">Chrome | iOS/Safari | Edge | Firefox</p>
+            </div>
+        </aside>
 
-    for (var c = 1; c < combs.length; c++) {
-        if (String(combs[c][0]).trim() === combIDVenta) {
-            precioUnitario = Number(combs[c][6]) || 14000;
-            break;
-        }
-    }
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <header class="topbar">
+                <h1 id="titulo-seccion">Dashboard de Combustibles</h1>
+                <div class="topbar-right-group">
+                    <span id="user-info">-</span>
+                    <button onclick="sincronizarDatosGlobales()" title="Actualizar datos desde la nube" class="btn-refrescar-discreto">🔄</button>
+                </div>
+            </header>
 
-    var hojaVentas = ss.getSheetByName("Ventas");
-    if (!hojaVentas) { hojaVentas = ss.insertSheet("Ventas"); hojaVentas.appendRow(["ID", "Fecha", "SurtidorID", "CombustibleID", "Galones", "PrecioVenta", "TotalVenta", "MedioPago", "Usuario", "Observaciones"]); }
-    var ventaID = "V-" + new Date().getTime();
-    var totalVenta = Number(data.cantidadGalones) * precioUnitario;
-    hojaVentas.appendRow([ventaID, new Date(), data.surtidorID, combIDVenta, data.cantidadGalones, precioUnitario, totalVenta, data.medioPago, data.usuario, data.observaciones]);
-    return { cantidadGalones: data.cantidadGalones, totalVenta: totalVenta };
-}
+            <!-- SECCIÓN DASHBOARD -->
+            <section id="sec-dashboard" class="seccion active">
+                <div class="filtro-ventas-bar">
+                    <span style="font-weight: 600; font-size: 0.9rem; margin-right: 10px;">📊 Ventas en Dashboard:</span>
+                    <button class="btn-filtro active" onclick="cambiarFiltroDashboard('hoy', event)">Hoy</button>
+                    <button class="btn-filtro" onclick="cambiarFiltroDashboard('ayer', event)">Día Anterior</button>
+                    <button class="btn-filtro" onclick="cambiarFiltroDashboard('semana', event)">Esta Semana</button>
+                    <button class="btn-filtro" onclick="cambiarFiltroDashboard('mes', event)">Este Mes</button>
+                </div>
 
-function actualizarPrecioCombustible(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hojaCombustibles = ss.getSheetByName("Combustibles");
-    var datos = hojaCombustibles.getDataRange().getValues();
-    var precioAnterior = 0;
-    var combustibleNombre = "";
-    var filaCombustible = -1;
+                <div class="card-grid" style="margin-bottom: 25px;" id="dashboard-ventas-resumen">
+                    <div class="card green">
+                        <h3>Ventas del Período</h3>
+                        <div class="card-body">
+                            <p>Dinero Recaudado: <span id="dash-ventas-dinero">$0</span></p>
+                            <p>Ventas en Efectivo: <span id="dash-ventas-efectivo">$0</span></p>
+                            <p>Pago con Tarjeta: <span id="dash-ventas-tarjeta">$0</span></p>
+                            <p>Ventas a Crédito: <span id="dash-ventas-credito">$0</span></p>
+                            <p>Galones Despachados: <span id="dash-ventas-galones">0 Gal</span></p>
+                            <p>Transacciones: <span id="dash-ventas-conteo">0</span></p>
+                        </div>
+                    </div>
+                </div>
 
-    for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][0]).trim().toUpperCase() === String(data.combustibleID).trim().toUpperCase()) {
-            precioAnterior = Number(datos[i][6]) || 0;
-            combustibleNombre = datos[i][1];
-            filaCombustible = i + 1;
-            break;
-        }
-    }
+                <h3 style="margin-bottom: 15px; color: var(--primary);">Niveles Actuales en Tanques</h3>
+                <div class="card-grid" id="dashboard-cards"></div>
+            </section>
 
-    if (filaCombustible === -1) throw new Error("Combustible no encontrado.");
+            <!-- SECCIÓN VENTAS -->
+            <section id="sec-ventas" class="seccion">
+                <div class="card form-card">
+                    <h3>Registro de Venta por Surtidor</h3>
+                    <form id="form-venta" onsubmit="handleVenta(event)">
+                        <div class="form-group">
+                            <label>Seleccionar Surtidor / Manguera:</label>
+                            <select id="venta-surtidor" required onchange="actualizarInfoSurtidor()">
+                                <option value="">Cargando surtidores...</option>
+                            </select>
+                        </div>
+                        <div class="form-info-box" id="info-surtidor-box">
+                            <p>Combustible: <span id="info-comb">-</span></p>
+                            <p>Precio por Galón Actual: $<span id="info-precio">-</span></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad de Galones Vendidos (Ej: 2.35):</label>
+                            <input type="number" step="0.01" id="venta-galones" required placeholder="Ej: 2.35" oninput="calcularTotalVentaPreview()">
+                        </div>
+                        <div class="form-info-box" style="background: #e2e8f0; border-left-color: var(--green);">
+                            <p>Total a Pagar Estimado: <span id="info-total-preview" style="font-size: 1.1rem; color: var(--green);">$0</span></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Medio de Pago:</label>
+                            <select id="venta-mediopago" required>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta Débito/Crédito</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                                <option value="Credito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Observaciones:</label>
+                            <input type="text" id="venta-obs" placeholder="Placa o notas">
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Venta</button>
+                    </form>
+                </div>
+            </section>
 
-    hojaCombustibles.getRange(filaCombustible, 7).setValue(data.nuevoPrecio);
+            <!-- SECCIÓN PRECIOS COMBUSTIBLE -->
+            <section id="sec-precios" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Actualizar Precios de Combustibles</h3>
+                    <form id="form-actualizar-precio" onsubmit="handleActualizarPrecio(event)">
+                        <div class="form-group">
+                            <label>Seleccionar Combustible:</label>
+                            <select id="precio-combustible-id" required>
+                                <option value="C001">ACPM</option>
+                                <option value="C002">Gasolina Corriente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nuevo Precio por Galón ($):</label>
+                            <input type="number" step="0.01" id="precio-nuevo-valor" required placeholder="Ej: 14200">
+                        </div>
+                        <button type="submit" class="btn-primary">Actualizar Precio y Registrar Auditoría</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Historial de Cambios de Precios (Auditoría)</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-historial-precios">
+                            <thead>
+                                <tr>
+                                    <th>Fecha y Hora</th>
+                                    <th>Combustible</th>
+                                    <th>Precio Anterior</th>
+                                    <th>Nuevo Precio</th>
+                                    <th>Usuario Responsable</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-    var hojaHistorial = ss.getSheetByName("HistorialPrecios");
-    if (!hojaHistorial) {
-        hojaHistorial = ss.insertSheet("HistorialPrecios");
-        hojaHistorial.appendRow(["FechaHora", "CombustibleID", "CombustibleNombre", "PrecioAnterior", "PrecioNuevo", "Usuario"]);
-    }
-    hojaHistorial.appendRow([new Date(), data.combustibleID, combustibleNombre, precioAnterior, data.nuevoPrecio, data.usuario]);
+            <!-- SECCIÓN PRODUCTOS TIENDA -->
+            <section id="sec-productos" class="seccion">
+                <div class="card">
+                    <h3>Inventario de Productos de Tienda</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-productos">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio Venta</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mín.</th>
+                                    <th>Ubicación</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-    return { mensaje: "Precio actualizado con éxito." };
-}
+            <!-- SECCIÓN COMPRAS -->
+            <section id="sec-compras" class="seccion">
+                <div class="card form-card">
+                    <h3>Generar Orden de Compra / Abastecimiento</h3>
+                    <form id="form-compra" onsubmit="handleCompra(event)">
+                        <div class="form-group">
+                            <label>Proveedor:</label>
+                            <select id="compra-proveedor" required>
+                                <option value="">Cargando proveedores...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Ítem a Pedir:</label>
+                            <select id="compra-tipo-item" required onchange="actualizarItemsCompraSelect()">
+                                <option value="COMBUSTIBLE">Combustible</option>
+                                <option value="PRODUCTO">Producto de Tienda</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Seleccionar Ítem:</label>
+                            <select id="compra-item" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad a Pedir:</label>
+                            <input type="number" step="0.01" id="compra-cantidad" required placeholder="Ej: 1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Precio Unitario de Compra ($):</label>
+                            <input type="number" step="0.01" id="compra-precio" required placeholder="Ej: 3800">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Esperada de Llegada:</label>
+                            <input type="date" id="compra-fecha" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Compra y Actualizar Stock</button>
+                    </form>
+                </div>
+            </section>
 
-function obtenerHistorialPrecios() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("HistorialPrecios");
-    if (!hoja) return [];
-    var datos = hoja.getDataRange().getValues();
-    var lista = [];
-    for (var i = 1; i < datos.length; i++) {
-        if (datos[i][0]) {
-            lista.push({
-                fechaHora: new Date(datos[i][0]).toLocaleString(),
-                combustibleID: datos[i][1],
-                combustibleNombre: datos[i][2],
-                precioAnterior: Number(datos[i][3]) || 0,
-                precioNuevo: Number(datos[i][4]) || 0,
-                usuario: datos[i][5]
-            });
-        }
-    }
-    return lista.reverse();
-}
+            <!-- SECCIÓN CAJA -->
+            <section id="sec-caja" class="seccion">
+                <div class="card form-card" style="margin-bottom: 25px;">
+                    <h3>Control de Caja y Turnos</h3>
+                    <div id="caja-estado-container" style="margin-bottom: 20px;">
+                        <p>Estado actual: <b id="lbl-estado-caja">Cargando...</b></p>
+                    </div>
+                    <div id="div-abrir-caja" style="display:none;">
+                        <form onsubmit="handleAbrirCaja(event)">
+                            <div class="form-group">
+                                <label>Base Inicial en Efectivo ($):</label>
+                                <input type="number" step="0.01" id="caja-base" required placeholder="Ej: 200000">
+                            </div>
+                            <button type="submit" class="btn-primary">Abrir Caja / Iniciar Turno</button>
+                        </form>
+                    </div>
+                    <div id="div-cerrar-caja" style="display:none;">
+                        <form onsubmit="handleCerrarCaja(event)">
+                            <div class="form-group">
+                                <label>Total Efectivo Real en Caja ($):</label>
+                                <input type="number" step="0.01" id="caja-real" required placeholder="Ej: 1500000">
+                            </div>
+                            <button type="submit" class="btn-primary" style="background: var(--red);">Cerrar Caja y Calcular Arqueo</button>
+                        </form>
+                    </div>
+                </div>
 
-function registrarGasto(data) {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var hoja = ss.getSheetByName("Gastos");
-    if (!hoja) {
-        hoja = ss.insertSheet("Gastos");
-        hoja.appendRow(["ID", "Fecha", "Categoria", "Descripcion", "Valor", "FormaPago", "Responsable", "Soporte"]);
-    }
-    var id = "GASTO-" + new Date().getTime();
-    hoja.appendRow([id, new Date(), data.categoria, data.descripcion, data.valor, data.formaPago, data.responsable, data.soporte]);
-    return { mensaje: "Gasto registrado correctamente." };
-}
+                <!-- MÓDULO DE BUZÓN DE SEGURIDAD (PARCIALES) -->
+                <div id="div-buzon-seguridad" class="card form-card" style="display:none; border-top-color: var(--yellow);">
+                    <h3>📥 Depósito de Parciales / Buzón de Seguridad</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">
+                        Ingrese el excedente de efectivo en sobre para mantener la base obligatoria en caja.
+                    </p>
+                    <form id="form-sobre-seguridad" onsubmit="handleRegistrarSobre(event)">
+                        <div class="form-group">
+                            <label>Valor del Sobre / Parcial ($):</label>
+                            <input type="number" step="0.01" id="sobre-valor" required placeholder="Ej: 200000">
+                        </div>
+                        <button type="submit" class="btn-primary" style="background: var(--yellow); color: var(--primary);">Depositar en Buzón de Seguridad</button>
+                    </form>
+                </div>
+            </section>
 
-function obtenerReportes() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var totalVentas = 0, totalGalones = 0, conteoVentas = 0, totalGastos = 0, totalCompras = 0;
+            <!-- SECCIÓN GASTOS -->
+            <section id="sec-gastos" class="seccion">
+                <div class="card form-card">
+                    <h3>Registrar Gasto Operativo</h3>
+                    <form id="form-gasto" onsubmit="handleGasto(event)">
+                        <div class="form-group">
+                            <label>Categoría:</label>
+                            <select id="gasto-categoria" required>
+                                <option value="Servicios Públicos">Servicios Públicos</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Nomina">Nómina / Personal</option>
+                                <option value="Insumos">Insumos y Papelería</option>
+                                <option value="Otros">Otros Gastos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción:</label>
+                            <input type="text" id="gasto-desc" required placeholder="Ej: Pago de energía">
+                        </div>
+                        <div class="form-group">
+                            <label>Valor ($):</label>
+                            <input type="number" step="0.01" id="gasto-valor" required placeholder="Ej: 450000">
+                        </div>
+                        <div class="form-group">
+                            <label>Forma de Pago:</label>
+                            <select id="gasto-pago" required>
+                                <option value="Efectivo">Efectivo (Sale de Caja)</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Responsable:</label>
+                            <input type="text" id="gasto-resp" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Soporte:</label>
+                            <input type="text" id="gasto-soporte" placeholder="Factura o Recibo">
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Gasto</button>
+                    </form>
+                </div>
+            </section>
 
-    var hojaVentas = ss.getSheetByName("Ventas");
-    if (hojaVentas) {
-        var vDatos = hojaVentas.getDataRange().getValues();
-        for (var i = 1; i < vDatos.length; i++) {
-            if (vDatos[i][0]) {
-                totalGalones += Number(vDatos[i][4]) || 0;
-                totalVentas += Number(vDatos[i][6]) || 0;
-                conteoVentas++;
-            }
-        }
-    }
+            <!-- SECCIÓN CUENTAS POR PAGAR -->
+            <section id="sec-cuentas-pagar" class="seccion">
+                <div id="alertas-cuentas-container" style="margin-bottom: 25px;"></div>
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nueva Cuenta por Pagar / Servicio</h3>
+                    <form id="form-cxp" onsubmit="handleRegistrarCuenta(event)">
+                        <div class="form-group">
+                            <label>Tercero / Proveedor (Ej: Enel / Codensa):</label>
+                            <input type="text" id="cxp-tercero" required placeholder="Nombre de la empresa o persona">
+                        </div>
+                        <div class="form-group">
+                            <label>Concepto (Ej: Recibo de luz mes de octubre):</label>
+                            <input type="text" id="cxp-concepto" required placeholder="Descripción de la obligación">
+                        </div>
+                        <div class="form-group">
+                            <label>Valor a Pagar ($):</label>
+                            <input type="number" step="0.01" id="cxp-valor" required placeholder="Ej: 350000">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Límite de Pago:</label>
+                            <input type="date" id="cxp-fecha" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar Cuenta por Pagar</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Listado de Obligaciones Pendientes</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-cuentas-pagar">
+                            <thead>
+                                <tr>
+                                    <th>Tercero</th>
+                                    <th>Concepto</th>
+                                    <th>Valor</th>
+                                    <th>Fecha Límite</th>
+                                    <th>Días Restantes</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-    var hojaGastos = ss.getSheetByName("Gastos");
-    if (hojaGastos) {
-        var gDatos = hojaGastos.getDataRange().getValues();
-        for (var j = 1; j < gDatos.length; j++) {
-            if (gDatos[j][0]) {
-                totalGastos += Number(gDatos[j][4]) || 0;
-            }
-        }
-    }
+            <!-- SECCIÓN CLIENTES -->
+            <section id="sec-clientes" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nuevo Cliente</h3>
+                    <form id="form-cliente" onsubmit="handleRegistrarCliente(event)">
+                        <div class="form-group"><label>Nombre Completo / Razón Social:</label><input type="text" id="cli-nombre" required placeholder="Ej: Transportes S.A."></div>
+                        <div class="form-group"><label>NIT o Cédula:</label><input type="text" id="cli-nit" required placeholder="Ej: 900123456-1"></div>
+                        <div class="form-group"><label>Teléfono:</label><input type="text" id="cli-tel" required placeholder="Ej: 3101234567"></div>
+                        <div class="form-group"><label>Correo Electrónico:</label><input type="email" id="cli-email" required placeholder="correo@cliente.com"></div>
+                        <div class="form-group"><label>Tipo de Cliente:</label>
+                            <select id="cli-tipo" required>
+                                <option value="General">General</option>
+                                <option value="Corporativo">Corporativo / Crédito</option>
+                                <option value="Frecuente">Frecuente</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar Cliente</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Directorio de Clientes</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-clientes">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>NIT / CC</th>
+                                    <th>Teléfono</th>
+                                    <th>Email</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-    return {
-        totalVentasDinero: totalVentas,
-        totalGalonesVendidos: totalGalones,
-        conteoVentas: conteoVentas,
-        totalGastosDinero: totalGastos,
-        totalComprasDinero: totalCompras
-    };
-}
+            <!-- SECCIÓN PROVEEDORES -->
+            <section id="sec-proveedores" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nuevo Proveedor</h3>
+                    <form id="form-proveedor" onsubmit="handleRegistrarProveedor(event)">
+                        <div class="form-group"><label>Nombre del Proveedor:</label><input type="text" id="prov-nombre" required placeholder="Ej: Global Petroleum"></div>
+                        <div class="form-group"><label>NIT:</label><input type="text" id="prov-nit" required placeholder="Ej: 900987654-2"></div>
+                        <div class="form-group"><label>Persona de Contacto:</label><input type="text" id="prov-contacto" required placeholder="Nombre del asesor"></div>
+                        <div class="form-group"><label>Teléfono:</label><input type="text" id="prov-tel" required placeholder="Teléfono de contacto"></div>
+                        <div class="form-group"><label>Email:</label><input type="email" id="prov-email" required placeholder="ventas@proveedor.com"></div>
+                        <div class="form-group"><label>Dirección:</label><input type="text" id="prov-dir" required placeholder="Dirección física"></div>
+                        <button type="submit" class="btn-primary">Guardar Proveedor</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Directorio de Proveedores</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-proveedores">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>NIT</th>
+                                    <th>Teléfono</th>
+                                    <th>Email</th>
+                                    <th>Dirección</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-function obtenerAlertas() {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var alertas = [];
-    var hojaCombs = ss.getSheetByName("Combustibles");
-    if (hojaCombs) {
-        var cDatos = hojaCombs.getDataRange().getValues();
-        for (var i = 1; i < cDatos.length; i++) {
-            if (cDatos[i][0]) {
-                var stock = Number(cDatos[i][7]) || 0;
-                var min = Number(cDatos[i][8]) || 500;
-                if (stock <= min) {
-                    alertas.push({ tipo: "CRITICO", mensaje: "Tanque " + cDatos[i][1] + " en nivel crítico (" + stock + " Gal)." });
-                }
-            }
-        }
-    }
-    return alertas;
-}
+            <!-- SECCIÓN GESTIÓN DE USUARIOS -->
+            <section id="sec-usuarios" class="seccion">
+                <div class="card form-card" style="margin-bottom: 30px;">
+                    <h3>Registrar Nuevo Usuario</h3>
+                    <form id="form-nuevo-usuario" onsubmit="handleCrearUsuario(event)">
+                        <div class="form-group">
+                            <label>Nombre Completo:</label>
+                            <input type="text" id="nuevo-nombre" required placeholder="Ej: Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Cédula:</label>
+                            <input type="text" id="nuevo-cedula" required placeholder="Ingrese su cédula">
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña Temporal:</label>
+                            <input type="password" id="nuevo-pass" required placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Expedición de la Cédula:</label>
+                            <input type="date" id="nuevo-fecha-exp" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Rol en el Sistema:</label>
+                            <select id="nuevo-rol" required>
+                                <option value="Administrador">Administrador</option>
+                                <option value="Gerente">Gerente</option>
+                                <option value="Operador">Operador</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Crear Usuario</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Usuarios Registrados en el Sistema</h3>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table class="data-table" id="tabla-usuarios">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-function registrarCompra() { return { compraID: "C-1", total: 0 }; }
-function registrarMovimientoInventario() { return { nuevoStock: 0 }; }
+            <!-- SECCIÓN REPORTES Y ALERTAS -->
+            <section id="sec-reportes" class="seccion">
+                <div class="card-grid" style="margin-bottom: 25px;">
+                    <div class="card green">
+                        <h3>Ventas Totales</h3>
+                        <div class="card-body">
+                            <p>Dinero Recaudado: <span id="rep-ventas-dinero">$0</span></p>
+                            <p>Galones Despachados: <span id="rep-ventas-galones">0 Gal</span></p>
+                            <p>Transacciones: <span id="rep-ventas-conteo">0</span></p>
+                        </div>
+                    </div>
+                    <div class="card red">
+                        <h3>Gastos & Compras</h3>
+                        <div class="card-body">
+                            <p>Total Gastos: <span id="rep-gastos">$0</span></p>
+                            <p>Total Compras: <span id="rep-compras">$0</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Alertas Activas del Sistema</h3>
+                    <div id="lista-alertas-container" style="margin-top: 15px;">
+                        <p>Cargando alertas...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN INVENTARIO COMBUSTIBLE -->
+            <section id="sec-inventario" class="seccion">
+                <div class="card form-card">
+                    <h3>Movimiento Extraordinario Combustible</h3>
+                    <form id="form-movimiento" onsubmit="handleMovimiento(event)">
+                        <div class="form-group">
+                            <label>Combustible:</label>
+                            <select id="mov-combustible" required>
+                                <option value="C001">ACPM</option>
+                                <option value="C002">Gasolina Corriente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Movimiento:</label>
+                            <select id="mov-tipo" required>
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="SALIDA">Salida</option>
+                                <option value="AJUSTE">Ajuste Físico</option>
+                            </select>
+                        </div>
+                        <div class="main-content-form">
+                            <!-- Continuación del inventario -->
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad:</label>
+                            <input type="number" step="0.01" id="mov-cantidad" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Observaciones:</label>
+                            <input type="text" id="mov-obs">
+                        </div>
+                        <button type="submit" class="btn-primary">Registrar</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
