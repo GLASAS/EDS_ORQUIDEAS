@@ -1,9 +1,18 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyJR4Ap051cFUAlrtFPh9bfPmGlFR7zq68itPjXcTUDth9WtuGfwwIMH6hAt2ODoODd/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwv-ZhlaLxfEFhL6lsi8r9CgqRCRJwLa5jt_aWT-vCfcQo9WToJh49Nr4efWzdEaEK1/exec";
+const VERSION_SISTEMA = "V.1140"; // <--- CAMBIA AQUÍ LA VERSIÓN CUANDO LO DESEES
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
 let usuarioActual = null;
 let filtroActualDashboard = 'hoy';
+
+// Aplicar versión al cargar el script
+document.addEventListener("DOMContentLoaded", () => {
+    let elLogin = document.getElementById('lbl-version-login');
+    let elSidebar = document.getElementById('lbl-version-sidebar');
+    if (elLogin) elLogin.innerText = `Version ${VERSION_SISTEMA}`;
+    if (elSidebar) elSidebar.innerText = `FuelManager ${VERSION_SISTEMA}`;
+});
 
 async function ejecutarAPI(payload) {
     let loader = document.getElementById('loading-indicator');
@@ -53,13 +62,6 @@ async function sincronizarDatosGlobales() {
     mostrarNotificacion("Sincronizando con la nube...", "success");
     try {
         let todo = await ejecutarAPI({ accion: 'obtenerDatosIniciales', filtroVentas: filtroActualDashboard });
-        
-        if (todo.versionSistema) {
-            let elLogin = document.getElementById('lbl-version-login');
-            let elSidebar = document.getElementById('lbl-version-sidebar');
-            if (elLogin) elLogin.innerText = `Version ${todo.versionSistema}`;
-            if (elSidebar) elSidebar.innerText = `FuelManager ${todo.versionSistema}`;
-        }
         
         renderizarDashboardDatos(todo.dashboard);
         renderizarSurtidoresSelect(todo.surtidores);
@@ -392,7 +394,6 @@ function actualizarItemsCompraSelect() {
     }
 }
 
-// 🛒 MANEJADOR DE ORDEN DE COMPRA DESDE LA INTERFAZ
 async function handleCompra(event) {
     event.preventDefault();
     let proveedorID = document.getElementById('compra-proveedor').value;
