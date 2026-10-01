@@ -40,7 +40,7 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>FuelManager <br> Copyright © 2026 <br> Version V.730</p>
+                <p>FuelManager <br> Copyright © 2026 <br> Version V740</p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
@@ -279,7 +279,7 @@
 
             <!-- SECCIÓN CAJA -->
             <section id="sec-caja" class="seccion">
-                <div class="card form-card">
+                <div class="card form-card" style="margin-bottom: 25px;">
                     <h3>Control de Caja y Turnos</h3>
                     <div id="caja-estado-container" style="margin-bottom: 20px;">
                         <p>Estado actual: <b id="lbl-estado-caja">Cargando...</b></p>
@@ -302,6 +302,21 @@
                             <button type="submit" class="btn-primary" style="background: var(--red);">Cerrar Caja y Calcular Arqueo</button>
                         </form>
                     </div>
+                </div>
+
+                <!-- MÓDULO DE BUZÓN DE SEGURIDAD (PARCIALES) -->
+                <div id="div-buzon-seguridad" class="card form-card" style="display:none; border-top-color: var(--yellow);">
+                    <h3>📥 Depósito de Parciales / Buzón de Seguridad</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">
+                        Ingrese el excedente de efectivo en sobre para mantener la base obligatoria en caja.
+                    </p>
+                    <form id="form-sobre-seguridad" onsubmit="handleRegistrarSobre(event)">
+                        <div class="form-group">
+                            <label>Valor del Sobre / Parcial ($):</label>
+                            <input type="number" step="0.01" id="sobre-valor" required placeholder="Ej: 200000">
+                        </div>
+                        <button type="submit" class="btn-primary" style="background: var(--yellow); color: var(--primary);">Depositar en Buzón de Seguridad</button>
+                    </form>
                 </div>
             </section>
 
@@ -466,6 +481,9 @@
                                 <option value="SALIDA">Salida</option>
                                 <option value="AJUSTE">Ajuste Físico</option>
                             </select>
+                        </div>
+                        <div class="main-content-form">
+                            <!-- Continuación del inventario -->
                         </div>
                         <div class="form-group">
                             <label>Cantidad:</label>
