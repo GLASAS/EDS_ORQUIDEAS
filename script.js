@@ -1,12 +1,11 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbx60o9r6Sxf7z8abr-2DWX_oQT0eI7yJlqhwF5J4sMriHLhn1JB4HgYqhDgslVoctE/exec";
-const VERSION_SISTEMA = "V.1150"; // <--- CAMBIA AQUÍ LA VERSIÓN CUANDO LO DESEES
+const API_URL = "https://script.google.com/macros/s/AKfycbwv-ZhlaLxfEFhL6lsi8r9CgqRCRJwLa5jt_aWT-vCfcQo9WToJh49Nr4efWzdEaEK1/exec";
+const VERSION_SISTEMA = "V.1141"; // <--- Actualizado para reflejar la mejora
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
 let usuarioActual = null;
 let filtroActualDashboard = 'hoy';
 
-// Aplicar versión y limpiar formulario de login al iniciar
 document.addEventListener("DOMContentLoaded", () => {
     let elLogin = document.getElementById('lbl-version-login');
     let elSidebar = document.getElementById('lbl-version-sidebar');
@@ -60,7 +59,6 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     }, 4000);
 }
 
-// 🚀 CARGA MASIVA ULTRA RÁPIDA (1 SOLA LLAMADA A LA NUBE EN VEZ DE 11)
 async function sincronizarDatosGlobales() {
     mostrarNotificacion("Sincronizando con la nube...", "success");
     try {
@@ -77,6 +75,7 @@ async function sincronizarDatosGlobales() {
         renderizarUsuariosTabla(todo.usuarios);
         renderizarReportesyAlertas(todo.reportes, todo.alertas);
         renderizarHistorialPrecios(todo.historialPrecios);
+        renderizarProductosTiendaSelect(todo.productos);
 
     } catch (err) {
         console.error("Error en sincronización masiva:", err);
@@ -159,6 +158,9 @@ function mostrarSeccion(seccionId, event) {
     } else if (seccionId === 'ventas') {
         document.getElementById('sec-ventas').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Registro de Ventas en Pista";
+    } else if (seccionId === 'ventas-tienda') {
+        document.getElementById('sec-ventas-tienda').classList.add('active');
+        document.getElementById('titulo-seccion').innerText = "Punto de Venta - Tienda";
     } else if (seccionId === 'precios') {
         document.getElementById('sec-precios').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Actualización de Precios";
@@ -317,6 +319,67 @@ async function handleVenta(event) {
     }
 }
 
+// 🛒 GESTIÓN DE VENTAS DE TIENDA
+function renderizarProductosTiendaSelect(prods) {
+    productosGlobal = prods;
+    let select = document.getElementById('vt-producto');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Seleccione un Producto --</option>';
+    prods.forEach(p => {
+        select.innerHTML += `<option value="${p.ID}">${p.Nombre} (Stock: ${Math.round(p.Stock)}) - $${Math.round(p.PrecioVenta)}</option>`;
+    });
+    actualizarInfoProductoTienda();
+}
+
+function actualizarInfoProductoTienda() {
+    let idSel = document.getElementById('vt-producto').value;
+    let prod = productosGlobal.find(p => p.ID === idSel);
+    if (prod) {
+        document.getElementById('vt-stock-disp').innerText = Math.round(prod.Stock) + " " + prod.Unidad;
+        document.getElementById('vt-precio-unit').innerText = Math.round(prod.PrecioVenta).toLocaleString();
+        calcularTotalTiendaPreview();
+    } else {
+        document.getElementById('vt-stock-disp').innerText = "-";
+        document.getElementById('vt-precio-unit').innerText = "-";
+        document.getElementById('vt-total-preview').innerText = "$0";
+    }
+}
+
+function calcularTotalTiendaPreview() {
+    let idSel = document.getElementById('vt-producto').value;
+    let prod = productosGlobal.find(p => p.ID === idSel);
+    let cant = parseInt(document.getElementById('vt-cantidad').value) || 0;
+    if (prod) {
+        let total = cant * prod.PrecioVenta;
+        document.getElementById('vt-total-preview').innerText = "$" + Math.round(total).toLocaleString();
+    }
+}
+
+async function handleVentaTienda(event) {
+    event.preventDefault();
+    let productoID = document.getElementById('vt-producto').value;
+    let cantidad = document.getElementById('vt-cantidad').value;
+    let medioPago = document.getElementById('vt-mediopago').value;
+    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
+
+    try {
+        let res = await ejecutarAPI({
+            accion: 'registrarVentaProducto',
+            productoID,
+            cantidad,
+            medioPago,
+            usuario: nombreUsuario
+        });
+        mostrarNotificacion(`${res.mensaje} Total: $${Math.round(res.total).toLocaleString()}`, 'success');
+        document.getElementById('form-venta-tienda').reset();
+        document.getElementById('vt-total-preview').innerText = "$0";
+        sincronizarDatosGlobales();
+        mostrarSeccion('dashboard');
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
 async function handleActualizarPrecio(event) {
     event.preventDefault();
     let combustibleID = document.getElementById('precio-combustible-id').value;
@@ -356,6 +419,7 @@ function renderizarHistorialPrecios(historial) {
 function renderizarProductosTabla(prods) {
     productosGlobal = prods;
     let tbody = document.querySelector('#tabla-productos tbody');
+    if(!tbody) return;
     tbody.innerHTML = "";
     if (!prods || prods.length === 0) {
         tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No hay productos registrados.</td></tr>";
@@ -378,6 +442,7 @@ function renderizarProductosTabla(prods) {
 
 function renderizarCatalogosCompra(provs, prods) {
     let selectProv = document.getElementById('compra-proveedor');
+    if(!selectProv) return;
     selectProv.innerHTML = '<option value="">-- Seleccione Proveedor --</option>';
     provs.forEach(p => {
         selectProv.innerHTML += `<option value="${p.ID}">${p.Nombre} (NIT: ${p.NIT})</option>`;
@@ -388,6 +453,7 @@ function renderizarCatalogosCompra(provs, prods) {
 function actualizarItemsCompraSelect() {
     let tipo = document.getElementById('compra-tipo-item').value;
     let selectItem = document.getElementById('compra-item');
+    if(!selectItem) return;
     selectItem.innerHTML = "";
 
     if (tipo === "COMBUSTIBLE") {
@@ -652,7 +718,7 @@ function renderizarUsuariosTabla(usuarios) {
                 <td>${u.rol}</td>
                 <td><span class="badge ${badgeClase}">${textoEstado}</span></td>
                 <td>
-                    <div style="display: flex; gap: 6px;">
+                    <div style="display: flex; gap: 6px; justify-content: flex-start; align-items: center;">
                         <button class="btn-accion-tabla" style="background: ${colorBotonEstado}; color: #fff;" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
                         <button class="btn-accion-tabla" style="background: var(--red); color: #fff;" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
                     </div>
@@ -715,7 +781,7 @@ function renderizarReportesyAlertas(rep, alertas) {
             contenedorAlertas.innerHTML = "<p style='color: var(--green);'>✅ No hay alertas activas en el sistema.</p>";
         } else {
             alertas.forEach(a => {
-                contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️ ${a.mensaje}</p></div>`;
+                contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️️ ${a.mensaje}</p></div>`;
             });
         }
     }
