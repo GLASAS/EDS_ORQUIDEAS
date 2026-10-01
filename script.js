@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwthM_D598wdp2UHKHtHC-zz4ybH30fvDjEoGeQ_VXXNLyRGy5b_JfxMh1gpKdQ5dpZ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzQVbNjKCj9NC4QXB6TR4UXX8rjJRjVk1fGxQ2rlITZyE-GGBvHQcyyuq870kjFv1C_/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -719,6 +719,19 @@ async function cargarReportesyAlertas() {
         document.getElementById('rep-ventas-conteo').innerText = rep.conteoVentas;
         document.getElementById('rep-gastos').innerText = "$" + Math.round(rep.totalGastosDinero).toLocaleString();
         document.getElementById('rep-compras').innerText = "$" + Math.round(rep.totalComprasDinero).toLocaleString();
+
+        let alertas = await ejecutarAPI({ accion: 'obtenerAlertas' });
+        let contenedorAlertas = document.getElementById('lista-alertas-container');
+        if (contenedorAlertas) {
+            contenedorAlertas.innerHTML = "";
+            if (!alertas || alertas.length === 0) {
+                contenedorAlertas.innerHTML = "<p style='color: var(--green);'>✅ No hay alertas activas en el sistema.</p>";
+            } else {
+                alertas.forEach(a => {
+                    contenedorAlertas.innerHTML += `<div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 8px;"><p style="color: var(--red); font-weight: bold;">⚠️ ${a.mensaje}</p></div>`;
+                });
+            }
+        }
     } catch (err) {
         console.error(err);
     }
