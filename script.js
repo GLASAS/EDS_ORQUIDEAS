@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzPpgg9nS2qYOP_aGbLWQZcihU4G1X3dgU8YJm4IXeUvcU-vJeUqc2LkWQ2kO6UvHLb/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbySNC2eGLhHlOY4LUgNz5Vr30Oj3eehHNnVx_w691SQv8cxpBBP10B-etT2-wSc5Itx/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -48,19 +48,26 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
     }, 4000);
 }
 
-function sincronizarDatosGlobales() {
+// Carga en paralelo ultra rápida para optimizar el rendimiento
+async function sincronizarDatosGlobales() {
     mostrarNotificacion("Actualizando datos desde la nube...", "success");
-    cargarDashboard();
-    cargarSurtidoresSelect();
-    cargarProductosTabla();
-    cargarCatalogosCompra();
-    verificarEstadoCaja();
-    cargarClientesTabla();
-    cargarProveedoresTabla();
-    cargarCuentasPorPagar();
-    cargarUsuariosTabla();
-    cargarReportesyAlertas();
-    cargarHistorialPrecios();
+    try {
+        await Promise.all([
+            cargarDashboard(),
+            cargarSurtidoresSelect(),
+            cargarProductosTabla(),
+            cargarCatalogosCompra(),
+            verificarEstadoCaja(),
+            cargarClientesTabla(),
+            cargarProveedoresTabla(),
+            cargarCuentasPorPagar(),
+            cargarUsuariosTabla(),
+            cargarReportesyAlertas(),
+            cargarHistorialPrecios()
+        ]);
+    } catch (err) {
+        console.error("Error en sincronización paralela:", err);
+    }
 }
 
 async function handleLogin(event) {
@@ -261,7 +268,7 @@ async function cargarSurtidoresSelect() {
         let select = document.getElementById('venta-surtidor');
         select.innerHTML = '<option value="">-- Seleccione un Surtidor --</option>';
         surts.forEach(s => {
-            select.innerHTML += `<option value="${s.ID}">${s.IslaID} - ${s.Nombre} (${s.CombustibleNombre})</option>`;
+            select.innerHTML += `<option value="${s.ID}">${s.ID} - ${s.IslaID} (${s.CombustibleNombre})</option>`;
         });
         actualizarInfoSurtidor();
     } catch (err) {
@@ -482,7 +489,6 @@ async function handleCerrarCaja(event) {
     }
 }
 
-// Cuentas por Pagar (Alerta a partir de 2 días o menos)
 async function cargarCuentasPorPagar() {
     try {
         let cuentas = await ejecutarAPI({ accion: 'obtenerCuentasPorPagar' });
@@ -558,7 +564,6 @@ async function marcarPagada(id) {
     } catch (err) { mostrarNotificacion(err.message, 'error'); }
 }
 
-// Clientes
 async function cargarClientesTabla() {
     try {
         let clientes = await ejecutarAPI({ accion: 'obtenerClientes' });
@@ -595,7 +600,6 @@ async function handleRegistrarCliente(event) {
     }
 }
 
-// Proveedores
 async function cargarProveedoresTabla() {
     try {
         let proveedores = await ejecutarAPI({ accion: 'obtenerProveedores' });
