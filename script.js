@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzQVbNjKCj9NC4QXB6TR4UXX8rjJRjVk1fGxQ2rlITZyE-GGBvHQcyyuq870kjFv1C_/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzPpgg9nS2qYOP_aGbLWQZcihU4G1X3dgU8YJm4IXeUvcU-vJeUqc2LkWQ2kO6UvHLb/exec";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -56,6 +56,8 @@ function sincronizarDatosGlobales() {
     cargarCatalogosCompra();
     verificarEstadoCaja();
     cargarClientesTabla();
+    cargarProveedoresTabla();
+    cargarCuentasPorPagar();
     cargarUsuariosTabla();
     cargarReportesyAlertas();
     cargarHistorialPrecios();
@@ -154,10 +156,18 @@ function mostrarSeccion(seccionId, event) {
     } else if (seccionId === 'gastos') {
         document.getElementById('sec-gastos').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Gastos Operativos";
+    } else if (seccionId === 'cuentas-pagar') {
+        document.getElementById('sec-cuentas-pagar').classList.add('active');
+        document.getElementById('titulo-seccion').innerText = "Cuentas por Pagar y Vencimientos";
+        cargarCuentasPorPagar();
     } else if (seccionId === 'clientes') {
         document.getElementById('sec-clientes').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Directorio Clientes";
         cargarClientesTabla();
+    } else if (seccionId === 'proveedores') {
+        document.getElementById('sec-proveedores').classList.add('active');
+        document.getElementById('titulo-seccion').innerText = "Directorio Proveedores";
+        cargarProveedoresTabla();
     } else if (seccionId === 'usuarios') {
         document.getElementById('sec-usuarios').classList.add('active');
         document.getElementById('titulo-seccion').innerText = "Gestión de Usuarios";
@@ -472,17 +482,154 @@ async function handleCerrarCaja(event) {
     }
 }
 
+// Cuentas por Pagar (Alerta a partir de 2 días o menos)
+async function cargarCuentasPorPagar() {
+    try {
+        let cuentas = await ejecutarAPI({ accion: 'obtenerCuentasPorPagar' });
+        let tbody = document.querySelector('#tabla-cuentas-pagar tbody');
+        let alertasContainer = document.getElementById('alertas-cuentas-container');
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+        alertasContainer.innerHTML = "";
+        let hayAlertasUrgentes = false;
+
+        if (!cuentas || cuentas.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No hay cuentas por pagar registradas.</td></tr>";
+            alertasContainer.innerHTML = "<p style='color: #64748b;'>No hay alertas de vencimiento próximas.</p>";
+            return;
+        }
+
+        cuentas.forEach(c => {
+            let badgeEstado = c.estado === 'PAGADO' ? '<span class="badge green">Pagado</span>' : '<span class="badge yellow">Pendiente</span>';
+            let botonAccion = c.estado === 'PENDIENTE' ? `<button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="marcarPagada('${c.id}')">Pagar</button>` : '-';
+            
+            if (c.alertaUrgente && c.estado === 'PENDIENTE') {
+                hayAlertasUrgentes = true;
+                alertasContainer.innerHTML += `
+                    <div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 10px;">
+                        <p><span class="badge red">⚠️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
+                        <p style="margin-top: 5px; color: var(--red); font-weight: bold;">${c.mensajeAlerta} Límite: ${c.fechaLimite} - Valor: $${Math.round(c.valor).toLocaleString()}</p>
+                    </div>
+                `;
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${c.tercero}</b></td>
+                    <td>${c.concepto}</td>
+                    <td>$${Math.round(c.valor).toLocaleString()}</td>
+                    <td>${c.fechaLimite}</td>
+                    <td>${c.diasRestantes} días</td>
+                    <td>${badgeEstado}</td>
+                    <td>${botonAccion}</td>
+                </tr>
+            `;
+        });
+
+        if (!hayAlertasUrgentes) {
+            alertasContainer.innerHTML = "<p style='color: var(--green); font-weight: 500;'>✅ No hay cuentas próximas a vencer en los próximos 2 días.</p>";
+        }
+    } catch (err) { console.error(err); }
+}
+
+async function handleRegistrarCuenta(event) {
+    event.preventDefault();
+    let tercero = document.getElementById('cxp-tercero').value;
+    let concepto = document.getElementById('cxp-concepto').value;
+    let valor = Math.round(Number(document.getElementById('cxp-valor').value));
+    let fechaLimite = document.getElementById('cxp-fecha').value;
+    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
+
+    try {
+        let res = await ejecutarAPI({ accion: 'registrarCuentaPorPagar', tercero, concepto, valor, fechaLimite, usuario: nombreUsuario });
+        mostrarNotificacion(res.mensaje, 'success');
+        document.getElementById('form-cxp').reset();
+        cargarCuentasPorPagar();
+    } catch (err) { mostrarNotificacion(err.message, 'error'); }
+}
+
+async function marcarPagada(id) {
+    if (!confirm("¿Confirma que esta cuenta ya fue pagada?")) return;
+    try {
+        let res = await ejecutarAPI({ accion: 'pagarCuenta', id });
+        mostrarNotificacion(res.mensaje, 'success');
+        cargarCuentasPorPagar();
+    } catch (err) { mostrarNotificacion(err.message, 'error'); }
+}
+
+// Clientes
 async function cargarClientesTabla() {
     try {
         let clientes = await ejecutarAPI({ accion: 'obtenerClientes' });
         let tbody = document.querySelector('#tabla-clientes tbody');
         if(!tbody) return;
         tbody.innerHTML = "";
+        if (!clientes || clientes.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No hay clientes registrados.</td></tr>";
+            return;
+        }
         clientes.forEach(c => {
             tbody.innerHTML += `<tr><td><b>${c.Nombre}</b></td><td>${c.NIT_CC}</td><td>${c.Telefono}</td><td>${c.Email}</td><td>${c.TipoCliente}</td></tr>`;
         });
     } catch (err) {
         console.error(err);
+    }
+}
+
+async function handleRegistrarCliente(event) {
+    event.preventDefault();
+    let nombre = document.getElementById('cli-nombre').value;
+    let nitCC = document.getElementById('cli-nit').value;
+    let telefono = document.getElementById('cli-tel').value;
+    let email = document.getElementById('cli-email').value;
+    let tipoCliente = document.getElementById('cli-tipo').value;
+
+    try {
+        let res = await ejecutarAPI({ accion: 'registrarCliente', nombre, nitCC, telefono, email, tipoCliente });
+        mostrarNotificacion(res.mensaje, 'success');
+        document.getElementById('form-cliente').reset();
+        cargarClientesTabla();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
+// Proveedores
+async function cargarProveedoresTabla() {
+    try {
+        let proveedores = await ejecutarAPI({ accion: 'obtenerProveedores' });
+        let tbody = document.querySelector('#tabla-proveedores tbody');
+        if(!tbody) return;
+        tbody.innerHTML = "";
+        if (!proveedores || proveedores.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No hay proveedores registrados.</td></tr>";
+            return;
+        }
+        proveedores.forEach(p => {
+            tbody.innerHTML += `<tr><td><b>${p.Nombre}</b></td><td>${p.NIT}</td><td>${p.Telefono}</td><td>${p.Email}</td><td>${p.Direccion}</td></tr>`;
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function handleRegistrarProveedor(event) {
+    event.preventDefault();
+    let nombre = document.getElementById('prov-nombre').value;
+    let nit = document.getElementById('prov-nit').value;
+    let contacto = document.getElementById('prov-contacto').value;
+    let telefono = document.getElementById('prov-tel').value;
+    let email = document.getElementById('prov-email').value;
+    let direccion = document.getElementById('prov-dir').value;
+
+    try {
+        let res = await ejecutarAPI({ accion: 'registrarProveedor', nombre, nit, contacto, telefono, email, direccion });
+        mostrarNotificacion(res.mensaje, 'success');
+        document.getElementById('form-proveedor').reset();
+        cargarProveedoresTabla();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
     }
 }
 
