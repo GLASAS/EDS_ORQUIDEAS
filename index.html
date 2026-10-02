@@ -14,13 +14,11 @@
     <link rel="stylesheet" href="Styles.css">
 </head>
 <body>
-    <!-- INDICADOR DE CARGA / SINCRONIZACIÓN -->
     <div id="loading-indicator" class="loading-bar-container" style="display: none;">
         <div class="loading-spinner"></div>
         <span>Actualizando información...</span>
     </div>
 
-    <!-- PANTALLA DE LOGIN -->
     <div id="login-container" class="login-overlay">
         <div class="login-card">
             <h2>Login <br> EDS ORQUIDEAS </h2>
@@ -40,13 +38,12 @@
                 <a href="#" onclick="mostrarModalRecuperacion(event)" style="font-size: 0.85rem; color: var(--accent); text-decoration: none;">¿Olvidó su contraseña?</a>
             </div>
             <div class="login-footer">
-                <p>EDS ORQUIDEAS <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1902</span></p>
+                <p>EDS ORQUIDEAS <br> Copyright © 2026 <br> <span id="lbl-version-login">Version V1144</span></p>
                 <p class="compat-info">Compatible con: Chrome 🌐 | iOS / Safari 📱 | Edge 💻 | Firefox 🦊</p>
             </div>
         </div>
     </div>
 
-    <!-- MODAL RECUPERACIÓN / CAMBIO DE CONTRASEÑA -->
     <div id="modal-recuperacion" class="login-overlay" style="display: none;">
         <div class="login-card">
             <h2>Restablecer Contraseña</h2>
@@ -72,9 +69,7 @@
         </div>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL -->
     <div class="app-container" id="app-main" style="display: none;">
-        <!-- Menú Lateral -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>FuelManager</h2>
@@ -97,12 +92,11 @@
                 <a href="#" onclick="cerrarSesion()" class="btn-salir-modulo">🚪 Salir del Sistema</a>
             </nav>
             <div class="sidebar-footer">
-                <p>Copyright © 2026 <span id="lbl-version-sidebar">FuelManager V1143</span></p>
+                <p>Copyright © 2026 <span id="lbl-version-sidebar">FuelManager V1144</span></p>
                 <p class="compat-info">Chrome | iOS/Safari | Edge | Firefox</p>
             </div>
         </aside>
 
-        <!-- Contenido Principal -->
         <main class="main-content">
             <header class="topbar">
                 <h1 id="titulo-seccion">Dashboard de Combustibles</h1>
@@ -112,7 +106,6 @@
                 </div>
             </header>
 
-            <!-- SECCIÓN DASHBOARD -->
             <section id="sec-dashboard" class="seccion active">
                 <div class="filtro-ventas-bar">
                     <span style="font-weight: 600; font-size: 0.9rem; margin-right: 10px;">📊 Ventas en Dashboard:</span>
@@ -141,7 +134,6 @@
                 <div class="card-grid" id="dashboard-cards"></div>
             </section>
 
-            <!-- SECCIÓN VENTAS PISTA -->
             <section id="sec-ventas" class="seccion">
                 <div class="card form-card">
                     <h3>Registro de Venta por Surtidor</h3>
@@ -181,7 +173,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN VENDER PRODUCTOS DE TIENDA -->
             <section id="sec-ventas-tienda" class="seccion">
                 <div class="card form-card">
                     <h3>🛒 Registrar Venta de Producto de Tienda</h3>
@@ -219,7 +210,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN PRECIOS COMBUSTIBLE -->
             <section id="sec-precios" class="seccion">
                 <div class="card form-card" style="margin-bottom: 30px;">
                     <h3>Actualizar Precios de Combustibles</h3>
@@ -257,7 +247,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN PRODUCTOS TIENDA -->
             <section id="sec-productos" class="seccion">
                 <div class="card">
                     <h3>Inventario de Productos de Tienda</h3>
@@ -280,7 +269,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN COMPRAS -->
             <section id="sec-compras" class="seccion">
                 <div class="card form-card">
                     <h3>Generar Orden de Compra / Abastecimiento</h3>
@@ -319,7 +307,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CAJA -->
             <section id="sec-caja" class="seccion">
                 <div class="card form-card" style="margin-bottom: 25px;">
                     <h3>Control de Caja y Turnos</h3>
@@ -361,7 +348,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN GASTOS -->
             <section id="sec-gastos" class="seccion">
                 <div class="card form-card">
                     <h3>Registrar Gasto Operativo</h3>
@@ -404,7 +390,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CUENTAS POR PAGAR -->
             <section id="sec-cuentas-pagar" class="seccion">
                 <div id="alertas-cuentas-container" style="margin-bottom: 25px;"></div>
                 <div class="card form-card" style="margin-bottom: 30px;">
@@ -450,7 +435,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN CLIENTES -->
             <section id="sec-clientes" class="seccion">
                 <div class="card form-card" style="margin-bottom: 30px;">
                     <h3>Registrar Nuevo Cliente</h3>
@@ -488,7 +472,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN PROVEEDORES -->
             <section id="sec-proveedores" class="seccion">
                 <div class="card form-card" style="margin-bottom: 30px;">
                     <h3>Registrar Nuevo Proveedor</h3>
@@ -521,7 +504,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN GESTIÓN DE USUARIOS -->
             <section id="sec-usuarios" class="seccion">
                 <div class="card form-card" style="margin-bottom: 30px;">
                     <h3>Registrar Nuevo Usuario</h3>
@@ -573,7 +555,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN REPORTES Y ALERTAS -->
             <section id="sec-reportes" class="seccion">
                 <div class="card-grid" style="margin-bottom: 25px;">
                     <div class="card green">
@@ -600,7 +581,6 @@
                 </div>
             </section>
 
-            <!-- SECCIÓN INVENTARIO COMBUSTIBLE -->
             <section id="sec-inventario" class="seccion">
                 <div class="card form-card">
                     <h3>Movimiento Extraordinario Combustible</h3>
