@@ -12,6 +12,31 @@
     <meta name="apple-mobile-web-app-title" content="FuelManager">
 
     <link rel="stylesheet" href="Styles.css">
+    <style>
+        /* Estilos modernos para botones en tablas y formularios */
+        .btn-modern {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            margin-right: 4px;
+        }
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        .btn-primary-mod { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+        .btn-warning-mod { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .btn-danger-mod  { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+        .btn-info-mod    { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; }
+    </style>
 </head>
 <body>
     <div id="loading-indicator" class="loading-bar-container" style="display: none;">
@@ -66,6 +91,37 @@
             <div style="margin-top: 15px; text-align: center;">
                 <a href="#" onclick="ocultarModalRecuperacion(event)" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">Volver al Login</a>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL MODIFICAR USUARIO -->
+    <div id="modal-modificar-usuario" class="login-overlay" style="display: none;">
+        <div class="login-card" style="max-width: 450px;">
+            <h2>Modificar Usuario</h2>
+            <p>Actualice los datos del usuario seleccionado:</p>
+            <form id="form-modificar-usuario" onsubmit="handleGuardarModificacionUsuario(event)">
+                <input type="hidden" id="mod-user-id">
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Nombre Completo:</label>
+                    <input type="text" id="mod-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Número de Cédula:</label>
+                    <input type="text" id="mod-cedula" required>
+                </div>
+                <div class="form-group">
+                    <label>Rol en el Sistema:</label>
+                    <select id="mod-rol" required>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Gerente">Gerente</option>
+                        <option value="Operador">Operador</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-modern btn-primary-mod" style="flex: 1; padding: 10px;">Guardar Cambios</button>
+                    <button type="button" class="btn-modern btn-danger-mod" style="flex: 1; padding: 10px;" onclick="cerrarModalModificarUsuario()">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 
