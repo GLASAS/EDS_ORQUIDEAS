@@ -1,5 +1,5 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbw4NiLuKqVpJqrwHF0YUzHAc71ovBZd7acfR60HCAPtc-oPx8xUeTwWFVIxAPGJPztr/exec";
-const VERSION_SISTEMA = "V.0820";
+const VERSION_SISTEMA = "V.0815";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -219,7 +219,7 @@ function renderizarDashboardDatos(res) {
     document.getElementById('dash-ventas-tarjeta').innerText = "$" + Math.round(v.tarjeta).toLocaleString();
     document.getElementById('dash-ventas-credito').innerText = "$" + Math.round(v.credito).toLocaleString();
     
-    // Mostramos los galones con 2 decimales para que coincidan con el Excel
+    // Mostramos los galones con 2 decimales
     document.getElementById('dash-galones-acpm').innerText = Number(v.galonesAcpm).toFixed(2) + " Gal";
     document.getElementById('dash-galones-gasolina').innerText = Number(v.galonesGasolina).toFixed(2) + " Gal";
     
@@ -492,6 +492,32 @@ async function handleCompra(event) {
         });
         mostrarNotificacion(res.mensaje, 'success');
         document.getElementById('form-compra').reset();
+        sincronizarDatosGlobales();
+        mostrarSeccion('dashboard');
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
+}
+
+async function handleMovimiento(event) {
+    event.preventDefault();
+    let combustibleID = document.getElementById('mov-combustible').value;
+    let tipoMovimiento = document.getElementById('mov-tipo').value;
+    let cantidad = document.getElementById('mov-cantidad').value;
+    let observaciones = document.getElementById('mov-obs').value;
+    let nombreUsuario = usuarioActual ? usuarioActual.nombre : "Administrador";
+
+    try {
+        let res = await ejecutarAPI({
+            accion: 'registrarMovimientoInventario',
+            combustibleID: combustibleID,
+            tipoMovimiento: tipoMovimiento,
+            cantidad: cantidad,
+            observaciones: observaciones,
+            usuario: nombreUsuario
+        });
+        mostrarNotificacion(res.mensaje || "Movimiento registrado con éxito.", 'success');
+        document.getElementById('form-movimiento').reset();
         sincronizarDatosGlobales();
         mostrarSeccion('dashboard');
     } catch (err) {
