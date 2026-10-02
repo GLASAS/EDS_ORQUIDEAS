@@ -1,5 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyWL3QRzG3jwzv6i3vnrgIO8-kskWPTPTIxDO0JN7zu-IUF2bkdcoPdlRycpL1BLi_m/exec";
-const VERSION_SISTEMA = "V.0830";
+const API_URL = "https://script.google.com/macros/s/AKfycbw4NiLuKqVpJqrwHF0YUzHAc71ovBZd7acfR60HCAPtc-oPx8xUeTwWFVIxAPGJPztr/exec";
+const VERSION_SISTEMA = "V.0821";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -29,7 +29,7 @@ async function ejecutarAPI(payload) {
         if (resultado.success) {
             return resultado.data;
         } else {
-            throw new Error(resultado.message);
+            throw new Error(resultado.message || "Error desconocido en el servidor.");
         }
     } catch (error) {
         throw error;
@@ -60,26 +60,27 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
 }
 
 async function sincronizarDatosGlobales() {
-    mostrarNotificacion("Sincronizando con la nube...", "success");
     try {
         let todo = await ejecutarAPI({ accion: 'obtenerDatosIniciales', filtroVentas: filtroActualDashboard });
+        if (!todo) return;
         
-        renderizarDashboardDatos(todo.dashboard);
-        renderizarSurtidoresSelect(todo.surtidores);
-        renderizarProductosTabla(todo.productos);
-        renderizarCatalogosCompra(todo.proveedores, todo.productos);
-        renderizarEstadoCaja(todo.estadoCaja);
-        renderizarClientesTabla(todo.clientes);
-        renderizarProveedoresTabla(todo.proveedores);
-        renderizarCuentasPorPagar(todo.cuentasPorPagar);
-        renderizarUsuariosTabla(todo.usuarios);
-        renderizarReportesyAlertas(todo.reportes, todo.alertas);
-        renderizarHistorialPrecios(todo.historialPrecios);
-        renderizarProductosTiendaSelect(todo.productos);
+        if (todo.dashboard) renderizarDashboardDatos(todo.dashboard);
+        if (todo.surtidores) renderizarSurtidoresSelect(todo.surtidores);
+        if (todo.productos) {
+            renderizarProductosTabla(todo.productos);
+            renderizarProductosTiendaSelect(todo.productos);
+        }
+        if (todo.proveedores) renderizarCatalogosCompra(todo.proveedores, todo.productos || []);
+        if (todo.estadoCaja) renderizarEstadoCaja(todo.estadoCaja);
+        if (todo.clientes) renderizarClientesTabla(todo.clientes);
+        if (todo.proveedores) renderizarProveedoresTabla(todo.proveedores);
+        if (todo.cuentasPorPagar) renderizarCuentasPorPagar(todo.cuentasPorPagar);
+        if (todo.usuarios) renderizarUsuariosTabla(todo.usuarios);
+        if (todo.reportes) renderizarReportesyAlertas(todo.reportes, todo.alertas);
+        if (todo.historialPrecios) renderizarHistorialPrecios(todo.historialPrecios);
 
     } catch (err) {
         console.error("Error en sincronización masiva:", err);
-        mostrarNotificacion("Error al sincronizar datos.", "error");
     }
 }
 
@@ -126,7 +127,7 @@ async function handleCambiarPassword(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'cambiarPassword', cedula, fechaExpedicion: fecha, nuevaPassword: nuevoPass });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Contraseña actualizada con éxito.", 'success');
         document.getElementById('modal-recuperacion').style.display = 'none';
         document.getElementById('login-container').style.display = 'flex';
     } catch (err) {
@@ -152,49 +153,28 @@ function mostrarSeccion(seccionId, event) {
         if(!a.classList.contains('btn-salir-modulo')) a.classList.remove('active');
     });
     
-    if (seccionId === 'dashboard') {
-        document.getElementById('sec-dashboard').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Dashboard de Combustibles";
-    } else if (seccionId === 'ventas') {
-        document.getElementById('sec-ventas').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Registro de Ventas en Pista";
-    } else if (seccionId === 'ventas-tienda') {
-        document.getElementById('sec-ventas-tienda').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Punto de Venta - Tienda";
-    } else if (seccionId === 'precios') {
-        document.getElementById('sec-precios').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Actualización de Precios";
-    } else if (seccionId === 'productos') {
-        document.getElementById('sec-productos').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Inventario de Productos";
-    } else if (seccionId === 'compras') {
-        document.getElementById('sec-compras').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Órdenes de Compra";
-    } else if (seccionId === 'caja') {
-        document.getElementById('sec-caja').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Control de Caja y Buzón";
-    } else if (seccionId === 'gastos') {
-        document.getElementById('sec-gastos').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Gastos Operativos";
-    } else if (seccionId === 'cuentas-pagar') {
-        document.getElementById('sec-cuentas-pagar').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Cuentas por Pagar y Vencimientos";
-    } else if (seccionId === 'clientes') {
-        document.getElementById('sec-clientes').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Directorio Clientes";
-    } else if (seccionId === 'proveedores') {
-        document.getElementById('sec-proveedores').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Directorio Proveedores";
-    } else if (seccionId === 'usuarios') {
-        document.getElementById('sec-usuarios').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Gestión de Usuarios";
-    } else if (seccionId === 'reportes') {
-        document.getElementById('sec-reportes').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Reportes & Alertas";
-    } else if (seccionId === 'inventario') {
-        document.getElementById('sec-inventario').classList.add('active');
-        document.getElementById('titulo-seccion').innerText = "Inv. Combustible";
+    const seccionesMap = {
+        'dashboard': ['sec-dashboard', 'Dashboard de Combustibles'],
+        'ventas': ['sec-ventas', 'Registro de Ventas en Pista'],
+        'ventas-tienda': ['sec-ventas-tienda', 'Punto de Venta - Tienda'],
+        'precios': ['sec-precios', 'Actualización de Precios'],
+        'productos': ['sec-productos', 'Inventario de Productos'],
+        'compras': ['sec-compras', 'Órdenes de Compra'],
+        'caja': ['sec-caja', 'Control de Caja y Buzón'],
+        'gastos': ['sec-gastos', 'Gastos Operativos'],
+        'cuentas-pagar': ['sec-cuentas-pagar', 'Cuentas por Pagar y Vencimientos'],
+        'clientes': ['sec-clientes', 'Directorio Clientes'],
+        'proveedores': ['sec-proveedores', 'Directorio Proveedores'],
+        'usuarios': ['sec-usuarios', 'Gestión de Usuarios'],
+        'reportes': ['sec-reportes', 'Reportes & Alertas'],
+        'inventario': ['sec-inventario', 'Inv. Combustible']
+    };
+
+    if (seccionesMap[seccionId]) {
+        document.getElementById(seccionesMap[seccionId][0]).classList.add('active');
+        document.getElementById('titulo-seccion').innerText = seccionesMap[seccionId][1];
     }
+
     if (event && event.currentTarget && !event.currentTarget.classList.contains('btn-salir-modulo')) {
         event.currentTarget.classList.add('active');
     }
@@ -206,77 +186,71 @@ async function cambiarFiltroDashboard(filtro, event) {
     filtroActualDashboard = filtro;
     try {
         let res = await ejecutarAPI({ accion: 'obtenerDashboard', filtroVentas: filtroActualDashboard });
-        renderizarDashboardDatos(res);
+        if (res) renderizarDashboardDatos(res);
     } catch (err) {
         console.error(err);
     }
 }
 
 function renderizarDashboardDatos(res) {
+    if (!res || !res.ventasResumen) return;
     let v = res.ventasResumen;
     document.getElementById('dash-ventas-dinero').innerText = "$" + Math.round(v.dineroTotal).toLocaleString();
     document.getElementById('dash-ventas-efectivo').innerText = "$" + Math.round(v.efectivo).toLocaleString();
     document.getElementById('dash-ventas-tarjeta').innerText = "$" + Math.round(v.tarjeta).toLocaleString();
     document.getElementById('dash-ventas-credito').innerText = "$" + Math.round(v.credito).toLocaleString();
     
-    // Mostramos los galones con 2 decimales
     document.getElementById('dash-galones-acpm').innerText = Number(v.galonesAcpm).toFixed(2) + " Gal";
     document.getElementById('dash-galones-gasolina').innerText = Number(v.galonesGasolina).toFixed(2) + " Gal";
-    
     document.getElementById('dash-ventas-conteo').innerText = v.conteo;
 
     let container = document.getElementById('dashboard-cards');
+    if (!container) return;
     container.innerHTML = "";
     
-    res.combustibles.forEach(c => {
-        let color = c.colorEstado;
-        let capMax = Math.round(Number(c.CapacidadMaxima) || 5000);
-        let stockActualRedondeado = Math.round(Number(c.StockActual) || 0);
-        let cantidadSugeridaRedondeada = Math.round(Number(c.cantidadSugerida) || 0);
-        let diasCoberturaRedondeados = Math.round(Number(c.diasCobertura) || 0);
-        let stockMinimoRedondeado = Math.round(Number(c.StockMinimo) || 0);
-        let stockSeguridadRedondeado = Math.round(Number(c.StockSeguridad) || 0);
-        let consumoDiarioRedondeado = Math.round(Number(c.consumoDiarioEstimado) || 0);
-        let porcentajeRedondeado = Math.round(Number(c.porcentajeLlenado) || 0);
+    if (res.combustibles) {
+        res.combustibles.forEach(c => {
+            let color = c.colorEstado;
+            let capMax = Math.round(Number(c.CapacidadMaxima) || 5000);
+            let stockActualRedondeado = Math.round(Number(c.StockActual) || 0);
+            let cantidadSugeridaRedondeada = Math.round(Number(c.cantidadSugerida) || 0);
+            let diasCoberturaRedondeados = Math.round(Number(c.diasCobertura) || 0);
+            let stockMinimoRedondeado = Math.round(Number(c.StockMinimo) || 0);
+            let stockSeguridadRedondeado = Math.round(Number(c.StockSeguridad) || 0);
+            let consumoDiarioRedondeado = Math.round(Number(c.consumoDiarioEstimado) || 0);
+            let porcentajeRedondeado = Math.round(Number(c.porcentajeLlenado) || 0);
 
-        let esCorriente = c.Nombre.toLowerCase().includes('corriente');
-        let esAcpm = c.Nombre.toLowerCase().includes('acpm');
-        let alertaRoja = false;
-
-        if (esCorriente && cantidadSugeridaRedondeada >= 4300) alertaRoja = true;
-        if (esAcpm && cantidadSugeridaRedondeada >= 1100) alertaRoja = true;
-
-        let estiloSugerida = alertaRoja ? 'color: var(--red); font-weight: bold;' : 'color: var(--accent);';
-
-        let html = `
-            <div class="card ${color} tanque-card">
-                <h3>${c.Nombre} <span class="badge ${color}">${c.estadoAlerta}</span></h3>
-                <div class="tanque-visual-container">
-                    <div class="cilindro-tanque" title="Nivel: ${porcentajeRedondeado}%">
-                        <div class="cilindro-liquido ${color}" style="height: ${porcentajeRedondeado}%;"></div>
+            let html = `
+                <div class="card ${color} tanque-card">
+                    <h3>${c.Nombre} <span class="badge ${color}">${c.estadoAlerta}</span></h3>
+                    <div class="tanque-visual-container">
+                        <div class="cilindro-tanque" title="Nivel: ${porcentajeRedondeado}%">
+                            <div class="cilindro-liquido ${color}" style="height: ${porcentajeRedondeado}%;"></div>
+                        </div>
+                        <div style="flex: 1;">
+                            <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${stockActualRedondeado} ${c.Unidad}</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">Capacidad: ${capMax} Gal</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">Autonomía: <b>${diasCoberturaRedondeados} días</b></p>
+                        </div>
                     </div>
-                    <div style="flex: 1;">
-                        <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">${stockActualRedondeado} ${c.Unidad}</p>
-                        <p style="font-size: 0.85rem; color: #64748b;">Capacidad: ${capMax} Gal</p>
-                        <p style="font-size: 0.85rem; color: #64748b;">Autonomía: <b>${diasCoberturaRedondeados} días</b></p>
+                    <div class="card-body" style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                        <p>Consumo Diario Est.: <span>${consumoDiarioRedondeado} ${c.Unidad}</span></p>
+                        <p>Stock Mínimo / Seg.: <span>${stockMinimoRedondeado} / ${stockSeguridadRedondeado}</span></p>
+                        <p>Cantidad Sugerida Pedido: <span style="color: var(--accent);">${cantidadSugeridaRedondeada} ${c.Unidad}</span></p>
                     </div>
                 </div>
-                <div class="card-body" style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                    <p>Consumo Diario Est.: <span>${consumoDiarioRedondeado} ${c.Unidad}</span></p>
-                    <p>Stock Mínimo / Seg.: <span>${stockMinimoRedondeado} / ${stockSeguridadRedondeado}</span></p>
-                    <p>Cantidad Sugerida Pedido: <span style="${estiloSugerida}">${cantidadSugeridaRedondeada} ${c.Unidad}</span></p>
-                </div>
-            </div>
-        `;
-        container.innerHTML += html;
-    });
+            `;
+            container.innerHTML += html;
+        });
+    }
 }
 
 function renderizarSurtidoresSelect(surts) {
-    surtidoresGlobal = surts;
+    surtidoresGlobal = surts || [];
     let select = document.getElementById('venta-surtidor');
+    if (!select) return;
     select.innerHTML = '<option value="">-- Seleccione un Surtidor --</option>';
-    surts.forEach(s => {
+    surtidoresGlobal.forEach(s => {
         select.innerHTML += `<option value="${s.ID}">${s.ID} - ${s.IslaID} (${s.CombustibleNombre})</option>`;
     });
     actualizarInfoSurtidor();
@@ -313,7 +287,7 @@ async function handleVenta(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarVentaPorGalones', surtidorID: surtID, cantidadGalones: galones, medioPago, usuario: nombreUsuario, observaciones: obs });
-        mostrarNotificacion(`Venta registrada. Galones: ${res.cantidadGalones} - Total: $${Math.round(res.totalVenta).toLocaleString()}`, 'success');
+        mostrarNotificacion(`Venta registrada con éxito.`, 'success');
         document.getElementById('form-venta').reset();
         document.getElementById('info-total-preview').innerText = "$0";
         mostrarSeccion('dashboard');
@@ -324,11 +298,11 @@ async function handleVenta(event) {
 }
 
 function renderizarProductosTiendaSelect(prods) {
-    productosGlobal = prods;
+    productosGlobal = prods || [];
     let select = document.getElementById('vt-producto');
     if (!select) return;
     select.innerHTML = '<option value="">-- Seleccione un Producto --</option>';
-    prods.forEach(p => {
+    productosGlobal.forEach(p => {
         select.innerHTML += `<option value="${p.ID}">${p.Nombre} (Stock: ${Math.round(p.Stock)}) - $${Math.round(p.PrecioVenta)}</option>`;
     });
     actualizarInfoProductoTienda();
@@ -373,7 +347,7 @@ async function handleVentaTienda(event) {
             medioPago,
             usuario: nombreUsuario
         });
-        mostrarNotificacion(`${res.mensaje} Total: $${Math.round(res.total).toLocaleString()}`, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Venta de tienda registrada.", 'success');
         document.getElementById('form-venta-tienda').reset();
         document.getElementById('vt-total-preview').innerText = "$0";
         sincronizarDatosGlobales();
@@ -391,7 +365,7 @@ async function handleActualizarPrecio(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'actualizarPrecioCombustible', combustibleID, nuevoPrecio, usuario: nombreUsuario });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Precio actualizado.", 'success');
         document.getElementById('form-actualizar-precio').reset();
         sincronizarDatosGlobales();
     } catch (err) {
@@ -401,6 +375,7 @@ async function handleActualizarPrecio(event) {
 
 function renderizarHistorialPrecios(historial) {
     let tbody = document.querySelector('#tabla-historial-precios tbody');
+    if (!tbody) return;
     tbody.innerHTML = "";
     if (!historial || historial.length === 0) {
         tbody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No hay registros de cambios de precios.</td></tr>";
@@ -420,7 +395,7 @@ function renderizarHistorialPrecios(historial) {
 }
 
 function renderizarProductosTabla(prods) {
-    productosGlobal = prods;
+    productosGlobal = prods || [];
     let tbody = document.querySelector('#tabla-productos tbody');
     if(!tbody) return;
     tbody.innerHTML = "";
@@ -447,7 +422,7 @@ function renderizarCatalogosCompra(provs, prods) {
     let selectProv = document.getElementById('compra-proveedor');
     if(!selectProv) return;
     selectProv.innerHTML = '<option value="">-- Seleccione Proveedor --</option>';
-    provs.forEach(p => {
+    (provs || []).forEach(p => {
         selectProv.innerHTML += `<option value="${p.ID}">${p.Nombre} (NIT: ${p.NIT})</option>`;
     });
     actualizarItemsCompraSelect();
@@ -490,7 +465,7 @@ async function handleCompra(event) {
             fechaEsperada,
             usuario: nombreUsuario
         });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Compra registrada con éxito.", 'success');
         document.getElementById('form-compra').reset();
         sincronizarDatosGlobales();
         mostrarSeccion('dashboard');
@@ -516,7 +491,7 @@ async function handleMovimiento(event) {
             observaciones: observaciones,
             usuario: nombreUsuario
         });
-        mostrarNotificacion(res.mensaje || "Movimiento registrado con éxito.", 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Movimiento registrado con éxito.", 'success');
         document.getElementById('form-movimiento').reset();
         sincronizarDatosGlobales();
         mostrarSeccion('dashboard');
@@ -530,6 +505,8 @@ function renderizarEstadoCaja(res) {
     let divAbrir = document.getElementById('div-abrir-caja');
     let divCerrar = document.getElementById('div-cerrar-caja');
     let divBuzon = document.getElementById('div-buzon-seguridad');
+
+    if (!res) return;
 
     if (res.estado === "ABIERTA") {
         lbl.innerHTML = `ABIERTA (Iniciada el ${new Date(res.fechaApertura).toLocaleString()})<br>` +
@@ -567,7 +544,7 @@ async function handleRegistrarSobre(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarSobreSeguridad', valorSobre: valorSobre, usuario: nombreUsuario });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Sobre registrado.", 'success');
         document.getElementById('form-sobre-seguridad').reset();
         sincronizarDatosGlobales();
     } catch (err) {
@@ -595,12 +572,12 @@ function renderizarCuentasPorPagar(cuentas) {
     if (!tbody) return;
 
     tbody.innerHTML = "";
-    alertasContainer.innerHTML = "";
+    if (alertasContainer) alertasContainer.innerHTML = "";
     let hayAlertasUrgentes = false;
 
     if (!cuentas || cuentas.length === 0) {
         tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No hay cuentas por pagar registradas.</td></tr>";
-        alertasContainer.innerHTML = "<p style='color: #64748b;'>No hay alertas de vencimiento próximas.</p>";
+        if (alertasContainer) alertasContainer.innerHTML = "<p style='color: #64748b;'>No hay alertas de vencimiento próximas.</p>";
         return;
     }
 
@@ -608,7 +585,7 @@ function renderizarCuentasPorPagar(cuentas) {
         let badgeEstado = c.estado === 'PAGADO' ? '<span class="badge green">Pagado</span>' : '<span class="badge yellow">Pendiente</span>';
         let botonAccion = c.estado === 'PENDIENTE' ? `<button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="marcarPagada('${c.id}')">Pagar</button>` : '-';
         
-        if (c.alertaUrgente && c.estado === 'PENDIENTE') {
+        if (c.alertaUrgente && c.estado === 'PENDIENTE' && alertasContainer) {
             hayAlertasUrgentes = true;
             alertasContainer.innerHTML += `
                 <div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 10px;">
@@ -631,7 +608,7 @@ function renderizarCuentasPorPagar(cuentas) {
         `;
     });
 
-    if (!hayAlertasUrgentes) {
+    if (!hayAlertasUrgentes && alertasContainer) {
         alertasContainer.innerHTML = "<p style='color: var(--green); font-weight: 500;'>✅ No hay cuentas próximas a vencer en los próximos 2 días.</p>";
     }
 }
@@ -646,7 +623,7 @@ async function handleRegistrarCuenta(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarCuentaPorPagar', tercero, concepto, valor, fechaLimite, usuario: nombreUsuario });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Cuenta registrada.", 'success');
         document.getElementById('form-cxp').reset();
         sincronizarDatosGlobales();
     } catch (err) { mostrarNotificacion(err.message, 'error'); }
@@ -656,7 +633,7 @@ async function marcarPagada(id) {
     if (!confirm("¿Confirma que esta cuenta ya fue pagada?")) return;
     try {
         let res = await ejecutarAPI({ accion: 'pagarCuenta', id });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Cuenta marcada como pagada.", 'success');
         sincronizarDatosGlobales();
     } catch (err) { mostrarNotificacion(err.message, 'error'); }
 }
@@ -684,7 +661,7 @@ async function handleRegistrarCliente(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarCliente', nombre, nitCC, telefono, email, tipoCliente });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Cliente guardado.", 'success');
         document.getElementById('form-cliente').reset();
         sincronizarDatosGlobales();
     } catch (err) {
@@ -716,7 +693,7 @@ async function handleRegistrarProveedor(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarProveedor', nombre, nit, contacto, telefono, email, direccion });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Proveedor guardado.", 'success');
         document.getElementById('form-proveedor').reset();
         sincronizarDatosGlobales();
     } catch (err) {
@@ -760,7 +737,7 @@ function renderizarUsuariosTabla(usuarios) {
 async function toggleEstadoUsuario(id) {
     try {
         let res = await ejecutarAPI({ accion: 'cambiarEstadoUsuario', id });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Estado actualizado.", 'success');
         sincronizarDatosGlobales();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
@@ -771,7 +748,7 @@ async function eliminarUsuarioSistema(id) {
     if (!confirm("¿Está seguro de eliminar este usuario del sistema?")) return;
     try {
         let res = await ejecutarAPI({ accion: 'eliminarUsuario', id });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Usuario eliminado.", 'success');
         sincronizarDatosGlobales();
     } catch (err) {
         mostrarNotificacion(err.message, 'error');
@@ -788,7 +765,7 @@ async function handleCrearUsuario(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarUsuario', nombre, cedula, password: pass, rol, fechaExpedicion: fechaExp });
-        mostrarNotificacion(res.mensaje, 'success');
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Usuario creado.", 'success');
         document.getElementById('form-nuevo-usuario').reset();
         sincronizarDatosGlobales();
     } catch (err) {
@@ -797,11 +774,17 @@ async function handleCrearUsuario(event) {
 }
 
 function renderizarReportesyAlertas(rep, alertas) {
-    document.getElementById('rep-ventas-dinero').innerText = "$" + Math.round(rep.totalVentasDinero).toLocaleString();
-    document.getElementById('rep-ventas-galones').innerText = Math.round(rep.totalGalonesVendidos) + " Gal";
-    document.getElementById('rep-ventas-conteo').innerText = rep.conteoVentas;
-    document.getElementById('rep-gastos').innerText = "$" + Math.round(rep.totalGastosDinero).toLocaleString();
-    document.getElementById('rep-compras').innerText = "$" + Math.round(rep.totalComprasDinero).toLocaleString();
+    if (!rep) return;
+    let elDinero = document.getElementById('rep-ventas-dinero');
+    if (elDinero) elDinero.innerText = "$" + Math.round(rep.totalVentasDinero).toLocaleString();
+    let elGalones = document.getElementById('rep-ventas-galones');
+    if (elGalones) elGalones.innerText = Math.round(rep.totalGalonesVendidos) + " Gal";
+    let elConteo = document.getElementById('rep-ventas-conteo');
+    if (elConteo) elConteo.innerText = rep.conteoVentas;
+    let elGastos = document.getElementById('rep-gastos');
+    if (elGastos) elGastos.innerText = "$" + Math.round(rep.totalGastosDinero).toLocaleString();
+    let elCompras = document.getElementById('rep-compras');
+    if (elCompras) elCompras.innerText = "$" + Math.round(rep.totalComprasDinero).toLocaleString();
 
     let contenedorAlertas = document.getElementById('lista-alertas-container');
     if (contenedorAlertas) {
