@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let formLogin = document.getElementById('form-login');
     if (formLogin) formLogin.reset();
 
-    // Sincronización automática en segundo plano cada 45 segundos
     setInterval(() => {
         if (usuarioActual && document.getElementById('app-main').style.display === 'flex') {
             sincronizarDatosGlobalesSilencioso();
@@ -619,7 +618,6 @@ function renderizarCuentasPorPagar(cuentas) {
         let badgeEstado = c.estado === 'PAGADO' ? '<span class="badge green">Pagado</span>' : '<span class="badge yellow">Pendiente</span>';
         let botonAccion = c.estado === 'PENDIENTE' ? `<button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="marcarPagada('${c.id}')">Pagar</button>` : '-';
         
-        // ALERTA PERSISTENTE: Se activa si los días restantes son menores o iguales a 2 (incluye vencidas con números negativos)
         if (c.estado === 'PENDIENTE' && c.diasRestantes <= 2 && alertasContainer) {
             hayAlertasUrgentes = true;
             let mensajeUrgente = c.diasRestantes < 0 ? 
