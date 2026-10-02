@@ -644,40 +644,14 @@
                     </div>
                 </div>
 
-                <!-- MÓDULO: REPORTE DE VENTAS DE COMBUSTIBLE POR FECHAS -->
+                <!-- EXPORTACIÓN DIRECTA Y RÁPIDA DE VENTAS DE COMBUSTIBLE -->
                 <div class="card" style="margin-bottom: 25px;">
-                    <h3>⛽ Informe de Ventas de Combustible por Fechas</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-top: 15px; margin-bottom: 15px;">
-                        <div style="flex: 1; min-width: 150px;">
-                            <label style="font-size: 0.85rem; font-weight: 600;">Fecha Inicio:</label>
-                            <input type="date" id="rep-fecha-inicio" class="form-group" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
-                        </div>
-                        <div style="flex: 1; min-width: 150px;">
-                            <label style="font-size: 0.85rem; font-weight: 600;">Fecha Fin:</label>
-                            <input type="date" id="rep-fecha-fin" class="form-group" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
-                        </div>
-                        <div>
-                            <button class="btn-modern btn-primary-mod" style="padding: 10px 16px;" onclick="consultarVentasPorFechas()">🔍 Consultar</button>
-                            <button class="btn-modern btn-info-mod" style="padding: 10px 16px;" onclick="exportarVentasExcel()">📊 Exportar Excel</button>
-                        </div>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table class="data-table" id="tabla-ventas-fechas">
-                            <thead>
-                                <tr>
-                                    <th>Fecha y Hora</th>
-                                    <th>Surtidor</th>
-                                    <th>Combustible</th>
-                                    <th>Galones</th>
-                                    <th>Total ($)</th>
-                                    <th>Medio Pago</th>
-                                    <th>Usuario</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td colspan="7" style="text-align: center; color: #64748b;">Seleccione un rango de fechas y presione Consultar.</td></tr>
-                            </tbody>
-                        </table>
+                    <h3>⛽ Informe de Ventas de Combustible</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">
+                        Haga clic en el botón para descargar de inmediato todo el registro de ventas de combustible de la estación a Excel.
+                    </p>
+                    <div>
+                        <button class="btn-modern btn-primary-mod" style="padding: 10px 20px; font-size: 0.9rem;" onclick="exportarVentasExcelDirecto()">📊 Exportar Ventas a Excel</button>
                     </div>
                 </div>
 
