@@ -94,7 +94,7 @@
         </div>
     </div>
 
-    <!-- MODAL MODIFICAR USUARIO (COMPLETO) -->
+    <!-- MODAL MODIFICAR USUARIO -->
     <div id="modal-modificar-usuario" class="login-overlay" style="display: none;">
         <div class="login-card" style="max-width: 450px; max-height: 90vh; overflow-y: auto;">
             <h2>Modificar Usuario</h2>
@@ -620,6 +620,14 @@
             </section>
 
             <section id="sec-reportes" class="seccion">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: var(--primary);">Panel de Indicadores y Exportación</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-modern btn-primary-mod" onclick="exportarReporteExcel()">📊 Exportar a Excel</button>
+                        <button class="btn-modern btn-danger-mod" onclick="exportarReportePDF()">📄 Descargar / Imprimir PDF</button>
+                    </div>
+                </div>
+
                 <div class="card-grid" style="margin-bottom: 25px;">
                     <div class="card green">
                         <h3>Ventas Totales</h3>
