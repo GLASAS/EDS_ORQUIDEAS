@@ -747,7 +747,6 @@ function renderizarUsuariosTabla(usuarios) {
         let badgeClase = esActivo ? 'green' : 'red';
         let textoEstado = esActivo ? 'Activo' : 'Inactivo';
         let botonEstadoTexto = esActivo ? 'Inactivar' : 'Activar';
-        let colorBotonEstado = esActivo ? 'var(--yellow)' : 'var(--green)';
 
         tbody.innerHTML += `
             <tr>
@@ -757,14 +756,50 @@ function renderizarUsuariosTabla(usuarios) {
                 <td>${u.rol}</td>
                 <td><span class="badge ${badgeClase}">${textoEstado}</span></td>
                 <td>
-                    <div style="display: flex; gap: 6px; justify-content: flex-start; align-items: center;">
-                        <button class="btn-accion-tabla" style="background: ${colorBotonEstado}; color: #fff;" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
-                        <button class="btn-accion-tabla" style="background: var(--red); color: #fff;" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
+                    <div style="display: flex; gap: 4px; justify-content: flex-start; align-items: center;">
+                        <button class="btn-modern btn-info-mod" onclick="abrirModalModificarUsuario('${u.id}', '${u.nombre}', '${u.cedula}', '${u.rol}')">✏️ Modificar</button>
+                        <button class="btn-modern btn-warning-mod" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
+                        <button class="btn-modern btn-danger-mod" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
                     </div>
                 </td>
             </tr>
         `;
     });
+}
+
+function abrirModalModificarUsuario(id, nombre, cedula, rol) {
+    document.getElementById("mod-user-id").value = id;
+    document.getElementById("mod-nombre").value = nombre;
+    document.getElementById("mod-cedula").value = cedula;
+    document.getElementById("mod-rol").value = rol;
+    document.getElementById("modal-modificar-usuario").style.display = "flex";
+}
+
+function cerrarModalModificarUsuario() {
+    document.getElementById("modal-modificar-usuario").style.display = "none";
+}
+
+async function handleGuardarModificacionUsuario(event) {
+    event.preventDefault();
+    let id = document.getElementById("mod-user-id").value;
+    let nombre = document.getElementById("mod-nombre").value;
+    let cedula = document.getElementById("mod-cedula").value;
+    let rol = document.getElementById("mod-rol").value;
+
+    try {
+        let res = await ejecutarAPI({
+            accion: 'modificarUsuario',
+            ID: id,
+            nombre: nombre,
+            cedula: cedula,
+            rol: rol
+        });
+        mostrarNotificacion(res && res.mensaje ? res.mensaje : "Usuario modificado exitosamente.", 'success');
+        cerrarModalModificarUsuario();
+        sincronizarDatosGlobales();
+    } catch (err) {
+        mostrarNotificacion(err.message, 'error');
+    }
 }
 
 async function toggleEstadoUsuario(id) {
