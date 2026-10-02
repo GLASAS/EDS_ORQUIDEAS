@@ -1,7 +1,7 @@
 /**************** MÓDULO COMPLETO: SCRIPT FRONTEND (script.js) ****************/
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyS5UhHlRphDW8tYi4AH-7XxmyWFsb9PRelB2_LmWBkw8D8gVbxOr2UwLSEAQvC7HIM/exec";
-const VERSION_SISTEMA = "V.1700";
+const API_URL = "https://script.google.com/macros/s/AKfycbweajrpVQJF0M4artO-WRA4Kj14mI1mzByzkSuwuhzzA3KHKGlD678vGq4Ndnrmw3pY/exec";
+const VERSION_SISTEMA = "V.1710";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -757,7 +757,7 @@ function renderizarUsuariosTabla(usuarios) {
                 <td><span class="badge ${badgeClase}">${textoEstado}</span></td>
                 <td>
                     <div style="display: flex; gap: 4px; justify-content: flex-start; align-items: center;">
-                        <button class="btn-modern btn-info-mod" onclick="abrirModalModificarUsuario('${u.id}', '${u.nombre}', '${u.cedula}', '${u.rol}')">✏️ Modificar</button>
+                        <button class="btn-modern btn-info-mod" onclick="abrirModalModificarUsuario('${u.id}', '${u.nombre}', '${u.cedula}', '${u.rol}', '${u.fechaExpedicion || ''}')">✏️ Modificar</button>
                         <button class="btn-modern btn-warning-mod" onclick="toggleEstadoUsuario('${u.id}')">${botonEstadoTexto}</button>
                         <button class="btn-modern btn-danger-mod" onclick="eliminarUsuarioSistema('${u.id}')">Eliminar</button>
                     </div>
@@ -767,11 +767,13 @@ function renderizarUsuariosTabla(usuarios) {
     });
 }
 
-function abrirModalModificarUsuario(id, nombre, cedula, rol) {
+function abrirModalModificarUsuario(id, nombre, cedula, rol, fechaExp) {
     document.getElementById("mod-user-id").value = id;
     document.getElementById("mod-nombre").value = nombre;
     document.getElementById("mod-cedula").value = cedula;
     document.getElementById("mod-rol").value = rol;
+    document.getElementById("mod-fecha-exp").value = fechaExp || "";
+    document.getElementById("mod-pass").value = "";
     document.getElementById("modal-modificar-usuario").style.display = "flex";
 }
 
@@ -785,6 +787,8 @@ async function handleGuardarModificacionUsuario(event) {
     let nombre = document.getElementById("mod-nombre").value;
     let cedula = document.getElementById("mod-cedula").value;
     let rol = document.getElementById("mod-rol").value;
+    let password = document.getElementById("mod-pass").value;
+    let fechaExpedicion = document.getElementById("mod-fecha-exp").value;
 
     try {
         let res = await ejecutarAPI({
@@ -792,7 +796,9 @@ async function handleGuardarModificacionUsuario(event) {
             ID: id,
             nombre: nombre,
             cedula: cedula,
-            rol: rol
+            rol: rol,
+            password: password,
+            fechaExpedicion: fechaExpedicion
         });
         mostrarNotificacion(res && res.mensaje ? res.mensaje : "Usuario modificado exitosamente.", 'success');
         cerrarModalModificarUsuario();
