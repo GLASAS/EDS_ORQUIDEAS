@@ -94,20 +94,28 @@
         </div>
     </div>
 
-    <!-- MODAL MODIFICAR USUARIO -->
+    <!-- MODAL MODIFICAR USUARIO (COMPLETO) -->
     <div id="modal-modificar-usuario" class="login-overlay" style="display: none;">
-        <div class="login-card" style="max-width: 450px;">
+        <div class="login-card" style="max-width: 450px; max-height: 90vh; overflow-y: auto;">
             <h2>Modificar Usuario</h2>
             <p>Actualice los datos del usuario seleccionado:</p>
             <form id="form-modificar-usuario" onsubmit="handleGuardarModificacionUsuario(event)">
                 <input type="hidden" id="mod-user-id">
-                <div class="form-group" style="margin-top: 15px;">
+                <div class="form-group" style="margin-top: 10px;">
                     <label>Nombre Completo:</label>
                     <input type="text" id="mod-nombre" required>
                 </div>
                 <div class="form-group">
                     <label>Número de Cédula:</label>
                     <input type="text" id="mod-cedula" required>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Contraseña (Opcional):</label>
+                    <input type="password" id="mod-pass" placeholder="Dejar en blanco para no cambiar">
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Expedición de la Cédula:</label>
+                    <input type="date" id="mod-fecha-exp" required>
                 </div>
                 <div class="form-group">
                     <label>Rol en el Sistema:</label>
