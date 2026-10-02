@@ -1,7 +1,7 @@
 /**************** MÓDULO COMPLETO: SCRIPT FRONTEND (script.js) ****************/
 
 const API_URL = "https://script.google.com/macros/s/AKfycbweajrpVQJF0M4artO-WRA4Kj14mI1mzByzkSuwuhzzA3KHKGlD678vGq4Ndnrmw3pY/exec";
-const VERSION_SISTEMA = "V.1710";
+const VERSION_SISTEMA = "V.1730";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -871,4 +871,34 @@ function renderizarReportesyAlertas(rep, alertas) {
             });
         }
     }
+}
+
+function exportarReporteExcel() {
+    let dinero = document.getElementById('rep-ventas-dinero').innerText;
+    let galones = document.getElementById('rep-ventas-galones').innerText;
+    let transacciones = document.getElementById('rep-ventas-conteo').innerText;
+    let gastos = document.getElementById('rep-gastos').innerText;
+    let compras = document.getElementById('rep-compras').innerText;
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Indicador,Valor\n";
+    csvContent += `Dinero Recaudado,"${dinero}"\n`;
+    csvContent += `Galones Despachados,"${galones}"\n`;
+    csvContent += `Transacciones,"${transacciones}"\n`;
+    csvContent += `Total Gastos,"${gastos}"\n`;
+    csvContent += `Total Compras,"${compras}"\n`;
+
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Reporte_EDS_Orquideas_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    mostrarNotificacion("Reporte exportado a Excel correctamente.", "success");
+}
+
+function exportarReportePDF() {
+    window.print();
 }
