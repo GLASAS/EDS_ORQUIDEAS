@@ -1,7 +1,7 @@
 /**************** MÓDULO COMPLETO: SCRIPT FRONTEND (script.js) ****************/
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyjjWDyng0JGrofdZhuk0MRWcXIQtIZLzoLI04KDey3XT5VZ1fRIqYEAguhE4HVZD3t/exec";
-const VERSION_SISTEMA = "V.1000";
+const API_URL = "https://script.google.com/macros/s/AKfycbw9OSPmeDPdVgoNeNkkPVI7BwbYtWLnOWagLZzLAplA7uyt3gmoqCa1SsPFMhD2T_aa/exec";
+const VERSION_SISTEMA = "V.1010";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
