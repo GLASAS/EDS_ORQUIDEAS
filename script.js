@@ -1,5 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxDnaqE2VRH73W6N1ekvxCg-tqqNHmJ7kcN_8i48aNTMvMzMOqYBNDDREpZuIgwayMv/exec";
-const VERSION_SISTEMA = "V.1210"; // <--- Versión actualizada
+const API_URL = "https://script.google.com/macros/s/AKfycbyJ6NKDDNTh1lZHlu_4j9hNEjQjXfi-3FGO7-5MLW78sBB7ZEyC_cx2kLkIawyuSD-u/exec";
+const VERSION_SISTEMA = "V.1900";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -218,7 +218,8 @@ function renderizarDashboardDatos(res) {
     document.getElementById('dash-ventas-efectivo').innerText = "$" + Math.round(v.efectivo).toLocaleString();
     document.getElementById('dash-ventas-tarjeta').innerText = "$" + Math.round(v.tarjeta).toLocaleString();
     document.getElementById('dash-ventas-credito').innerText = "$" + Math.round(v.credito).toLocaleString();
-    document.getElementById('dash-ventas-galones').innerText = Math.round(v.galones) + " Gal";
+    document.getElementById('dash-galones-acpm').innerText = Math.round(v.galonesAcpm) + " Gal";
+    document.getElementById('dash-galones-gasolina').innerText = Math.round(v.galonesGasolina) + " Gal";
     document.getElementById('dash-ventas-conteo').innerText = v.conteo;
 
     let container = document.getElementById('dashboard-cards');
@@ -319,7 +320,6 @@ async function handleVenta(event) {
     }
 }
 
-// 🛒 GESTIÓN DE VENTAS DE TIENDA
 function renderizarProductosTiendaSelect(prods) {
     productosGlobal = prods;
     let select = document.getElementById('vt-producto');
@@ -488,10 +488,7 @@ async function handleCompra(event) {
             usuario: nombreUsuario
         });
         mostrarNotificacion(res.mensaje, 'success');
-        
-        // 🧹 RESTABLECER LAS CASILLAS DEL FORMULARIO DE COMPRA
         document.getElementById('form-compra').reset();
-        
         sincronizarDatosGlobales();
         mostrarSeccion('dashboard');
     } catch (err) {
