@@ -218,8 +218,11 @@ function renderizarDashboardDatos(res) {
     document.getElementById('dash-ventas-efectivo').innerText = "$" + Math.round(v.efectivo).toLocaleString();
     document.getElementById('dash-ventas-tarjeta').innerText = "$" + Math.round(v.tarjeta).toLocaleString();
     document.getElementById('dash-ventas-credito').innerText = "$" + Math.round(v.credito).toLocaleString();
-    document.getElementById('dash-galones-acpm').innerText = Math.round(v.galonesAcpm) + " Gal";
-    document.getElementById('dash-galones-gasolina').innerText = Math.round(v.galonesGasolina) + " Gal";
+    
+    // Mostramos los galones con 2 decimales para que coincidan con el Excel
+    document.getElementById('dash-galones-acpm').innerText = Number(v.galonesAcpm).toFixed(2) + " Gal";
+    document.getElementById('dash-galones-gasolina').innerText = Number(v.galonesGasolina).toFixed(2) + " Gal";
+    
     document.getElementById('dash-ventas-conteo').innerText = v.conteo;
 
     let container = document.getElementById('dashboard-cards');
@@ -310,7 +313,7 @@ async function handleVenta(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarVentaPorGalones', surtidorID: surtID, cantidadGalones: galones, medioPago, usuario: nombreUsuario, observaciones: obs });
-        mostrarNotificacion(`Venta registrada. Galones: ${Math.round(res.cantidadGalones)} - Total: $${Math.round(res.totalVenta).toLocaleString()}`, 'success');
+        mostrarNotificacion(`Venta registrada. Galones: ${res.cantidadGalones} - Total: $${Math.round(res.totalVenta).toLocaleString()}`, 'success');
         document.getElementById('form-venta').reset();
         document.getElementById('info-total-preview').innerText = "$0";
         mostrarSeccion('dashboard');
