@@ -1,5 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyz7C8AGfKp69kms88Xb-jVXw5rw0p_KPiosTpDWmN0PDfEPM-h0CuxaXfK-U1k1MKQ/exec";
-const VERSION_SISTEMA = "V.2010";
+const API_URL = "https://script.google.com/macros/s/AKfycbyVQUUSoVlA5d_mczjMdL4O7cK0kEUh3zFsK9roh-sm16lQwLMijDnPVjwTpP_g1IZ-/exec";
+const VERSION_SISTEMA = "V.2020";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
