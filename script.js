@@ -1,13 +1,12 @@
 /**************** MÓDULO COMPLETO: SCRIPT FRONTEND (script.js) ****************/
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxQR0orGWIo4wG02UCZZeaPAipS4A0LaKM6sLBuwhHCrKbP1frE83rU-S9a_whkkPQ/exec";
-const VERSION_SISTEMA = "V.1800";
+const API_URL = "https://script.google.com/macros/s/AKfycbzbYCXxlyxox1IQf8Hg1ZVp9SD0pkLCcbwZ5fW4vUqOFWbEtmkNWN5KOWs4CDLbS3tw/exec";
+const VERSION_SISTEMA = "V.1750";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
 let usuarioActual = null;
 let filtroActualDashboard = 'hoy';
-let ventasFechasGlobal = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     let elLogin = document.getElementById('lbl-version-login');
@@ -877,82 +876,48 @@ function renderizarReportesyAlertas(rep, alertas) {
     }
 }
 
-async function consultarVentasPorFechas() {
-    let fechaInicio = document.getElementById('rep-fecha-inicio').value;
-    let fechaFin = document.getElementById('rep-fecha-fin').value;
-
-    if (!fechaInicio || !fechaFin) {
-        mostrarNotificacion("Debe seleccionar la fecha de inicio y la fecha fin.", "error");
-        return;
-    }
-
+async function exportarVentasExcelDirecto() {
     try {
-        let res = await ejecutarAPI({
-            accion: 'obtenerVentasPorFechas',
-            fechaInicio: fechaInicio,
-            fechaFin: fechaFin
-        });
+        mostrarNotificacion("Generando archivo Excel rápido de ventas, por favor espere...", "success");
+        
+        let ventas = await ejecutarAPI({ accion: 'obtenerTodasLasVentasCombustible' });
 
-        ventasFechasGlobal = res || [];
-        let tbody = document.querySelector('#tabla-ventas-fechas tbody');
-        if (!tbody) return;
-        tbody.innerHTML = "";
-
-        if (ventasFechasGlobal.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No se encontraron ventas en el rango de fechas seleccionado.</td></tr>";
+        if (!ventas || ventas.length === 0) {
+            mostrarNotificacion("No hay registros de ventas de combustible disponibles para exportar.", "error");
             return;
         }
 
-        ventasFechasGlobal.forEach(v => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${v.fechaHora || ''}</td>
-                    <td>${v.surtidorID || ''}</td>
-                    <td><b>${v.combustibleNombre || ''}</b></td>
-                    <td>${Number(v.cantidadGalones || 0).toFixed(2)} Gal</td>
-                    <td>$${Math.round(Number(v.totalVenta || 0)).toLocaleString()}</td>
-                    <td>${v.medioPago || ''}</td>
-                    <td>${v.usuario || ''}</td>
-                </tr>
-            `;
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "ID,Fecha y Hora,Surtidor,Combustible,Galones,Precio Unitario,Total Venta,Medio de Pago,Usuario,Observaciones\n";
+
+        ventas.forEach(v => {
+            let row = [
+                `"${v.id || ''}"`,
+                `"${v.fechaHora || ''}"`,
+                `"${v.surtidorID || ''}"`,
+                `"${v.combustibleNombre || ''}"`,
+                Number(v.cantidadGalones || 0).toFixed(2),
+                Math.round(Number(v.precioUnitario || 0)),
+                Math.round(Number(v.totalVenta || 0)),
+                `"${v.medioPago || ''}"`,
+                `"${v.usuario || ''}"`,
+                `"${v.observaciones || ''}"`
+            ];
+            csvContent += row.join(",") + "\n";
         });
-        mostrarNotificacion("Reporte consultado con éxito.", "success");
+
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Informe_General_Ventas_Combustible_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        mostrarNotificacion("¡Informe exportado con éxito!", "success");
     } catch (err) {
-        mostrarNotificacion(err.message, "error");
+        mostrarNotificacion("Error al exportar: " + err.message, "error");
     }
-}
-
-function exportarVentasExcel() {
-    if (!ventasFechasGlobal || ventasFechasGlobal.length === 0) {
-        mostrarNotificacion("No hay datos consultados para exportar.", "error");
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Fecha y Hora,Surtidor,Combustible,Galones,Total Venta,Medio de Pago,Usuario\n";
-
-    ventasFechasGlobal.forEach(v => {
-        let row = [
-            `"${v.fechaHora || ''}"`,
-            `"${v.surtidorID || ''}"`,
-            `"${v.combustibleNombre || ''}"`,
-            Number(v.cantidadGalones || 0).toFixed(2),
-            Math.round(Number(v.totalVenta || 0)),
-            `"${v.medioPago || ''}"`,
-            `"${v.usuario || ''}"`
-        ];
-        csvContent += row.join(",") + "\n";
-    });
-
-    let encodedUri = encodeURI(csvContent);
-    let link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Informe_Ventas_Combustible_${document.getElementById('rep-fecha-inicio').value}_al_${document.getElementById('rep-fecha-fin').value}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    mostrarNotificacion("Informe de ventas exportado a Excel con éxito.", "success");
 }
 
 function exportarReportePDF() {
