@@ -1,5 +1,7 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwYBR1EjuL4Z9407CgIfG_G1XWtvgQnHr69q_dR7RVshXpJZ1ESpDCehxvXMwHScIfZ/exec";
-const VERSION_SISTEMA = "V.0955";
+/**************** MÓDULO COMPLETO: SCRIPT FRONTEND (script.js) ****************/
+
+const API_URL = "https://script.google.com/macros/s/AKfycbw4NiLuKqVpJqrwHF0YUzHAc71ovBZd7acfR60HCAPtc-oPx8xUeTwWFVIxAPGJPztr/exec";
+const VERSION_SISTEMA = "V.0950";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
@@ -14,6 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
     let formLogin = document.getElementById('form-login');
     if (formLogin) formLogin.reset();
+
+    // Sincronización automática en segundo plano cada 45 segundos
+    setInterval(() => {
+        if (usuarioActual && document.getElementById('app-main').style.display === 'flex') {
+            sincronizarDatosGlobalesSilencioso();
+        }
+    }, 45000);
 });
 
 async function ejecutarAPI(payload) {
@@ -35,6 +44,19 @@ async function ejecutarAPI(payload) {
         throw error;
     } finally {
         if (loader) loader.style.display = 'none';
+    }
+}
+
+async function ejecutarAPISilencioso(payload) {
+    try {
+        let respuesta = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        let resultado = await respuesta.json();
+        return resultado.success ? resultado.data : null;
+    } catch (error) {
+        return null;
     }
 }
 
@@ -81,6 +103,17 @@ async function sincronizarDatosGlobales() {
 
     } catch (err) {
         console.error("Error en sincronización masiva:", err);
+    }
+}
+
+async function sincronizarDatosGlobalesSilencioso() {
+    try {
+        let todo = await ejecutarAPISilencioso({ accion: 'obtenerDatosIniciales', filtroVentas: filtroActualDashboard });
+        if (!todo) return;
+        if (todo.dashboard) renderizarDashboardDatos(todo.dashboard);
+        if (todo.estadoCaja) renderizarEstadoCaja(todo.estadoCaja);
+    } catch (err) {
+        console.error("Sincronización en segundo plano pausada.", err);
     }
 }
 
@@ -287,7 +320,7 @@ async function handleVenta(event) {
 
     try {
         let res = await ejecutarAPI({ accion: 'registrarVentaPorGalones', surtidorID: surtID, cantidadGalones: galones, medioPago, usuario: nombreUsuario, observaciones: obs });
-        mostrarNotificacion(`Venta registrada con éxito.`, 'success');
+        mostrarNotificacion(`Venta registrada. Galones: ${res.cantidadGalones} - Total: $${Math.round(res.totalVenta).toLocaleString()}`, 'success');
         document.getElementById('form-venta').reset();
         document.getElementById('info-total-preview').innerText = "$0";
         mostrarSeccion('dashboard');
