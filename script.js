@@ -1,12 +1,13 @@
 /**************** MÓDULO COMPLETO: SCRIPT FRONTEND (script.js) ****************/
 
-const API_URL = "https://script.google.com/macros/s/AKfycbweajrpVQJF0M4artO-WRA4Kj14mI1mzByzkSuwuhzzA3KHKGlD678vGq4Ndnrmw3pY/exec";
-const VERSION_SISTEMA = "V.1730";
+const API_URL = "https://script.google.com/macros/s/AKfycbzAVl4DpvkoCweFe4fgvPdn1F_Q0Pwtcitv7DpieIKlybLSRrrqgzbKWU7Q-cMmCEDs/exec";
+const VERSION_SISTEMA = "V.1740";
 
 let surtidoresGlobal = [];
 let productosGlobal = [];
 let usuarioActual = null;
 let filtroActualDashboard = 'hoy';
+let ventasFechasGlobal = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     let elLogin = document.getElementById('lbl-version-login');
@@ -618,12 +619,17 @@ function renderizarCuentasPorPagar(cuentas) {
         let badgeEstado = c.estado === 'PAGADO' ? '<span class="badge green">Pagado</span>' : '<span class="badge yellow">Pendiente</span>';
         let botonAccion = c.estado === 'PENDIENTE' ? `<button class="btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="marcarPagada('${c.id}')">Pagar</button>` : '-';
         
-        if (c.alertaUrgente && c.estado === 'PENDIENTE' && alertasContainer) {
+        // ALERTA PERSISTENTE: Se activa si los días restantes son menores o iguales a 2 (incluye vencidas con números negativos)
+        if (c.estado === 'PENDIENTE' && c.diasRestantes <= 2 && alertasContainer) {
             hayAlertasUrgentes = true;
+            let mensajeUrgente = c.diasRestantes < 0 ? 
+                `⚠️ FACTURA VENCIDA HACE ${Math.abs(c.diasRestantes)} DÍAS (¡PAGO URGENTE REQUERIDO!)` : 
+                `⚠️ ALERTA DE VENCIMIENTO PRÓXIMO (${c.diasRestantes} días restantes)`;
+
             alertasContainer.innerHTML += `
                 <div class="form-info-box" style="border-left-color: var(--red); background: #fef2f2; margin-bottom: 10px;">
-                    <p><span class="badge red">⚠️ ALERTA DE VENCIMIENTO</span> <b>${c.concepto}</b> (${c.tercero})</p>
-                    <p style="margin-top: 5px; color: var(--red); font-weight: bold;">${c.mensajeAlerta} Límite: ${c.fechaLimite} - Valor: $${Math.round(c.valor).toLocaleString()}</p>
+                    <p><span class="badge red">${mensajeUrgente}</span> <b>${c.concepto}</b> (${c.tercero})</p>
+                    <p style="margin-top: 5px; color: var(--red); font-weight: bold;">Límite: ${c.fechaLimite} - Valor: $${Math.round(c.valor).toLocaleString()}</p>
                 </div>
             `;
         }
@@ -642,7 +648,7 @@ function renderizarCuentasPorPagar(cuentas) {
     });
 
     if (!hayAlertasUrgentes && alertasContainer) {
-        alertasContainer.innerHTML = "<p style='color: var(--green); font-weight: 500;'>✅ No hay cuentas próximas a vencer en los próximos 2 días.</p>";
+        alertasContainer.innerHTML = "<p style='color: var(--green); font-weight: 500;'>✅ No hay cuentas próximas a vencer ni vencidas pendientes.</p>";
     }
 }
 
@@ -873,30 +879,82 @@ function renderizarReportesyAlertas(rep, alertas) {
     }
 }
 
-function exportarReporteExcel() {
-    let dinero = document.getElementById('rep-ventas-dinero').innerText;
-    let galones = document.getElementById('rep-ventas-galones').innerText;
-    let transacciones = document.getElementById('rep-ventas-conteo').innerText;
-    let gastos = document.getElementById('rep-gastos').innerText;
-    let compras = document.getElementById('rep-compras').innerText;
+async function consultarVentasPorFechas() {
+    let fechaInicio = document.getElementById('rep-fecha-inicio').value;
+    let fechaFin = document.getElementById('rep-fecha-fin').value;
+
+    if (!fechaInicio || !fechaFin) {
+        mostrarNotificacion("Debe seleccionar la fecha de inicio y la fecha fin.", "error");
+        return;
+    }
+
+    try {
+        let res = await ejecutarAPI({
+            accion: 'obtenerVentasPorFechas',
+            fechaInicio: fechaInicio,
+            fechaFin: fechaFin
+        });
+
+        ventasFechasGlobal = res || [];
+        let tbody = document.querySelector('#tabla-ventas-fechas tbody');
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        if (ventasFechasGlobal.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No se encontraron ventas en el rango de fechas seleccionado.</td></tr>";
+            return;
+        }
+
+        ventasFechasGlobal.forEach(v => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${v.fechaHora || ''}</td>
+                    <td>${v.surtidorID || ''}</td>
+                    <td><b>${v.combustibleNombre || ''}</b></td>
+                    <td>${Number(v.cantidadGalones || 0).toFixed(2)} Gal</td>
+                    <td>$${Math.round(Number(v.totalVenta || 0)).toLocaleString()}</td>
+                    <td>${v.medioPago || ''}</td>
+                    <td>${v.usuario || ''}</td>
+                </tr>
+            `;
+        });
+        mostrarNotificacion("Reporte consultado con éxito.", "success");
+    } catch (err) {
+        mostrarNotificacion(err.message, "error");
+    }
+}
+
+function exportarVentasExcel() {
+    if (!ventasFechasGlobal || ventasFechasGlobal.length === 0) {
+        mostrarNotificacion("No hay datos consultados para exportar.", "error");
+        return;
+    }
 
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Indicador,Valor\n";
-    csvContent += `Dinero Recaudado,"${dinero}"\n`;
-    csvContent += `Galones Despachados,"${galones}"\n`;
-    csvContent += `Transacciones,"${transacciones}"\n`;
-    csvContent += `Total Gastos,"${gastos}"\n`;
-    csvContent += `Total Compras,"${compras}"\n`;
+    csvContent += "Fecha y Hora,Surtidor,Combustible,Galones,Total Venta,Medio de Pago,Usuario\n";
+
+    ventasFechasGlobal.forEach(v => {
+        let row = [
+            `"${v.fechaHora || ''}"`,
+            `"${v.surtidorID || ''}"`,
+            `"${v.combustibleNombre || ''}"`,
+            Number(v.cantidadGalones || 0).toFixed(2),
+            Math.round(Number(v.totalVenta || 0)),
+            `"${v.medioPago || ''}"`,
+            `"${v.usuario || ''}"`
+        ];
+        csvContent += row.join(",") + "\n";
+    });
 
     let encodedUri = encodeURI(csvContent);
     let link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Reporte_EDS_Orquideas_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `Informe_Ventas_Combustible_${document.getElementById('rep-fecha-inicio').value}_al_${document.getElementById('rep-fecha-fin').value}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    mostrarNotificacion("Reporte exportado a Excel correctamente.", "success");
+
+    mostrarNotificacion("Informe de ventas exportado a Excel con éxito.", "success");
 }
 
 function exportarReportePDF() {
