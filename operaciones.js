@@ -11,13 +11,7 @@ function handleCrearUsuario(event) {
     const fechaExpedicion = document.getElementById('nuevo-fecha-exp').value;
     const rol = document.getElementById('nuevo-rol').value;
 
-    const datosUsuario = {
-        nombre,
-        cedula,
-        password,
-        fechaExpedicion,
-        rol
-    };
+    const datosUsuario = { nombre, cedula, password, fechaExpedicion, rol };
 
     if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
 
