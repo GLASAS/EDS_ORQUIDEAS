@@ -32,22 +32,22 @@ function sincronizarDatosGlobales() {
         if (data && data.success) {
             cacheDatosGlobales = data;
             
-            // 1. Actualizar resumen de ventas en dashboard
+            // 1. Resumen de ventas en dashboard
             if (typeof procesarResumenVentasDashboard === 'function') {
                 procesarResumenVentasDashboard(data.ventas);
             }
             
-            // 2. Actualizar niveles exactos de tanques (botellas de Gasolina y ACPM)
+            // 2. Niveles de tanques (botellas)
             if (typeof actualizarNivelesTanquesUI === 'function') {
                 actualizarNivelesTanquesUI(data.inventario, data.ventas);
             }
 
-            // 3. Actualizar la tabla del historial de precios y auditoría
+            // 3. Historial de precios y auditoría
             if (typeof actualizarHistorialPreciosUI === 'function') {
                 actualizarHistorialPreciosUI(data.historialPrecios);
             }
 
-            // 4. Inicializar módulo de Compras / Abastecimiento
+            // 4. Módulo de Compras y Abastecimiento
             if (typeof inicializarModuloCompras === 'function') {
                 inicializarModuloCompras(data.proveedores, data.productos);
             }
