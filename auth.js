@@ -2,7 +2,7 @@
 // MÓDULO: AUTENTICACIÓN Y SESIONES (GITHUB PAGES)
 // ==========================================
 
-// ⚠️ ASEGÚRATE DE PEGAR AQUÍ TU URL REAL DE GOOGLE APPS SCRIPT
+// URL real de tu Web App de Google Apps Script configurada correctamente
 const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwTQ3BunU1MM6nU87Y75NmG0xEGUIYbb9pxG6nplhGtoMjIznaneh1-6sma2ibKaEpV/exec"; 
 
 function handleLogin(event) {
@@ -10,11 +10,6 @@ function handleLogin(event) {
     const cedula = document.getElementById('login-cedula').value.trim();
     const password = document.getElementById('login-password').value.trim();
     
-    if (URL_WEB_APP.includes("AQUÍ_PEGA")) {
-        alert("Por favor configure su URL de Apps Script real en el archivo auth.js");
-        return;
-    }
-
     mostrarIndicadorCarga(true);
 
     fetch(URL_WEB_APP, {
@@ -49,7 +44,7 @@ function handleLogin(event) {
     .catch(error => {
         mostrarIndicadorCarga(false);
         console.error("Error detallado:", error);
-        alert("Error de conexión con el servidor. Verifique que la URL de Apps Script sea correcta y la implementación esté actualizada.");
+        alert("Error de conexión con el servidor. Verifique que la implementación en Apps Script esté actualizada.");
     });
 }
 
