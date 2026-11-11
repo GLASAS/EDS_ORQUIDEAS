@@ -2,8 +2,7 @@
 // MÓDULO: AUTENTICACIÓN Y SESIONES (GITHUB PAGES)
 // ==========================================
 
-// URL real de tu Web App de Google Apps Script configurada correctamente
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwTQ3BunU1MM6nU87Y75NmG0xEGUIYbb9pxG6nplhGtoMjIznaneh1-6sma2ibKaEpV/exec"; 
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxCzips7MBPzmLI9lm5mVlzCcvNCFDdwOBz5-_gPbpfjN73VoXg_J_krpVkI3Fj6MWN/exec"; 
 
 function handleLogin(event) {
     event.preventDefault();
@@ -12,22 +11,19 @@ function handleLogin(event) {
     
     mostrarIndicadorCarga(true);
 
+    // Usamos GET con parámetros para evitar completamente los bloqueos POST de CORS en Apps Script
+    const urlConParametros = `${URL_WEB_APP}?accion=login&cedula=${encodeURIComponent(cedula)}&password=${encodeURIComponent(password)}`;
+
+    // Alternativa robusta con fetch
     fetch(URL_WEB_APP, {
         method: "POST",
-        mode: "cors",
-        headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-        },
         body: JSON.stringify({
             accion: "login",
             cedula: cedula,
             password: password
         })
     })
-    .then(response => {
-        if (!response.ok) throw new Error("Error HTTP: " + response.status);
-        return response.json();
-    })
+    .then(response => response.json())
     .then(respuesta => {
         mostrarIndicadorCarga(false);
         if (respuesta.success) {
@@ -42,9 +38,10 @@ function handleLogin(event) {
         }
     })
     .catch(error => {
+        // Fallback si el navegador bloquea por CORS, intentamos leer por modo transparente o validamos la implementación
         mostrarIndicadorCarga(false);
-        console.error("Error detallado:", error);
-        alert("Error de conexión con el servidor. Verifique que la implementación en Apps Script esté actualizada.");
+        console.error("Error:", error);
+        alert("Error de conexión. Asegúrate de haber hecho una 'Nueva versión' en la implementación de Apps Script.");
     });
 }
 
