@@ -1,11 +1,11 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (GASOLINA PRIMERO, CILINDROS BOTELLA Y ALERTAS)
+// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (BOTELLAS, ALERTAS Y MOVIMIENTOS)
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     const ventasPorCombustible = {};
     
-    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)[cite: 6]
+    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)
     if (datosVentas && datosVentas.length > 1) {
         for (let i = 1; i < datosVentas.length; i++) {
             const combustibleId = String(datosVentas[i][3]).trim().toUpperCase();
@@ -20,7 +20,7 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     let datosC001 = { id: "C001", nombre: "ACPM", stockBase: 0, capacidadMax: 2300 };
     let datosC002 = { id: "C002", nombre: "Gasolina Corriente", stockBase: 0, capacidadMax: 6300 };
 
-    // 2. Sumar el inventario agrupando estrictamente por C001 y C002[cite: 5]
+    // 2. Sumar el inventario agrupando estrictamente por C001 y C002
     if (datosInventario && datosInventario.length > 1) {
         for (let j = 1; j < datosInventario.length; j++) {
             const idComb = String(datosInventario[j][2]).trim().toUpperCase();
@@ -49,7 +49,7 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
 
-    // Forzar contenedor horizontal flexible de dos columnas centrado
+    // Forzar contenedor horizontal flexible centrado
     contenedorCards.style.cssText = "display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: flex-start;";
 
     // ORDEN ESTRICTO: GASOLINA DE PRIMERAS (C002) Y ACPM DESPUÉS (C001)
@@ -139,7 +139,9 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     });
 }
 
-// Manejador del formulario de movimiento extraordinario
+// ==========================================
+// MANEJADOR DE MOVIMIENTO EXTRAORDINARIO (REGISTRO EN GOOGLE DRIVE)
+// ==========================================
 function handleMovimiento(event) {
     event.preventDefault();
     
@@ -152,7 +154,16 @@ function handleMovimiento(event) {
 
     if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
 
-    fetch(URL_WEB_APP, {
+    // Validar si la URL de la Web App está definida globalmente (en main.js o auth.js)
+    const urlDestino = typeof URL_WEB_APP !== 'undefined' ? URL_WEB_APP : (window.URL_WEB_APP || "");
+    
+    if (!urlDestino) {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        alert("Error crítico: La URL de la Web App (URL_WEB_APP) no está configurada en el sistema.");
+        return;
+    }
+
+    fetch(urlDestino, {
         method: "POST",
         body: JSON.stringify({
             accion: "registrarMovimiento",
@@ -174,7 +185,7 @@ function handleMovimiento(event) {
     })
     .catch(err => {
         if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
-        console.error("Error:", err);
-        alert("Error de conexión al guardar en Google Drive.");
+        console.error("Error detallado:", err);
+        alert("Error de conexión al intentar guardar en Google Drive.");
     });
 }
