@@ -31,10 +31,22 @@ function sincronizarDatosGlobales() {
         mostrarIndicadorCarga(false);
         if (data && data.success) {
             cacheDatosGlobales = data;
-            // Actualizar resumen de ventas en dashboard
-            procesarResumenVentasDashboard(data.ventas);
-            // Actualizar niveles exactos de tanques
-            actualizarNivelesTanquesUI(data.inventario, data.ventas);
+            
+            // 1. Actualizar resumen de ventas en dashboard
+            if (typeof procesarResumenVentasDashboard === 'function') {
+                procesarResumenVentasDashboard(data.ventas);
+            }
+            
+            // 2. Actualizar niveles exactos de tanques (botellas de Gasolina y ACPM)
+            if (typeof actualizarNivelesTanquesUI === 'function') {
+                actualizarNivelesTanquesUI(data.inventario, data.ventas);
+            }
+
+            // 3. Actualizar la tabla del historial de precios y auditoría
+            if (typeof actualizarHistorialPreciosUI === 'function') {
+                actualizarHistorialPreciosUI(data.historialPrecios);
+            }
+
         } else {
             console.error("Error al obtener datos:", data.message);
         }
