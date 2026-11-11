@@ -2,17 +2,14 @@
 // MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE
 // ==========================================
 
-/**
- * Calcula los niveles de combustible exactos restando:
- * Hoja INVENTARIO_COMBUSTIBLE (Columna C y E) menos
- * Hoja Ventas (Columna D = CombustibleID, Columna E = Galid).
- */
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     const ventasPorCombustible = {};
+    
+    // Acumular galones vendidos por CombustibleID (Columna D -> índice 3, Galid Columna E -> índice 4)
     if (datosVentas && datosVentas.length > 1) {
         for (let i = 1; i < datosVentas.length; i++) {
-            const combustibleId = datosVentas[i][3]; // Columna D
-            const galones = parseFloat(datosVentas[i][4]) || 0; // Columna E (Galid)
+            const combustibleId = String(datosVentas[i][3]).trim();
+            const galones = parseFloat(datosVentas[i][4]) || 0;
             if (combustibleId) {
                 ventasPorCombustible[combustibleId] = (ventasPorCombustible[combustibleId] || 0) + galones;
             }
@@ -23,10 +20,11 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
 
+    // Procesar inventario (Columna C índice 2 = CombustibleID, Columna E índice 4 = Cantidad/Stock inicial)
     if (datosInventario && datosInventario.length > 1) {
         for (let j = 1; j < datosInventario.length; j++) {
-            const idComb = datosInventario[j][2]; // Columna C (CombustibleID)
-            const stockInicial = parseFloat(datosInventario[j][4]) || 0; // Columna E (Cantidad / Stock inicial)
+            const idComb = String(datosInventario[j][2]).trim();
+            const stockInicial = parseFloat(datosInventario[j][4]) || 0;
             const nombreComb = datosInventario[j][1] || idComb;
 
             if (idComb) {
