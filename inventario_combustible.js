@@ -1,11 +1,11 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (GASOLINA PRIMERO, CILINDRO TIPO BOTELLA Y ALERTAS)
+// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (GASOLINA PRIMERO, CILINDROS BOTELLA Y ALERTAS)
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     const ventasPorCombustible = {};
     
-    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)
+    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)[cite: 6]
     if (datosVentas && datosVentas.length > 1) {
         for (let i = 1; i < datosVentas.length; i++) {
             const combustibleId = String(datosVentas[i][3]).trim().toUpperCase();
@@ -20,7 +20,7 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     let datosC001 = { id: "C001", nombre: "ACPM", stockBase: 0, capacidadMax: 2300 };
     let datosC002 = { id: "C002", nombre: "Gasolina Corriente", stockBase: 0, capacidadMax: 6300 };
 
-    // 2. Sumar el inventario agrupando estrictamente por C001 y C002
+    // 2. Sumar el inventario agrupando estrictamente por C001 y C002[cite: 5]
     if (datosInventario && datosInventario.length > 1) {
         for (let j = 1; j < datosInventario.length; j++) {
             const idComb = String(datosInventario[j][2]).trim().toUpperCase();
@@ -49,10 +49,10 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
 
-    // Forzar contenedor horizontal flexible de dos columnas
+    // Forzar contenedor horizontal flexible de dos columnas centrado
     contenedorCards.style.cssText = "display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: flex-start;";
 
-    // ORDEN INVERTIDO: GASOLINA DE PRIMERAS (C002) Y ACPM DESPUÉS (C001)
+    // ORDEN ESTRICTO: GASOLINA DE PRIMERAS (C002) Y ACPM DESPUÉS (C001)
     const tanquesUnificados = [
         { ...datosC002, vendido: vendidoC002 },
         { ...datosC001, vendido: vendidoC001 }
@@ -136,5 +136,45 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
             </div>
         `;
         contenedorCards.innerHTML += cardHTML;
+    });
+}
+
+// Manejador del formulario de movimiento extraordinario
+function handleMovimiento(event) {
+    event.preventDefault();
+    
+    const combustible = document.getElementById('mov-combustible').value;
+    const tipo = document.getElementById('mov-tipo').value;
+    const cantidad = parseFloat(document.getElementById('mov-cantidad').value);
+    const obs = document.getElementById('mov-obs').value;
+
+    const datosMovimiento = { combustible, tipo, cantidad, observaciones: obs };
+
+    if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
+
+    fetch(URL_WEB_APP, {
+        method: "POST",
+        body: JSON.stringify({
+            accion: "registrarMovimiento",
+            datosMovimiento: datosMovimiento
+        })
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        if (res.success) {
+            alert("¡Movimiento registrado y guardado en Google Drive con éxito!");
+            document.getElementById('form-movimiento').reset();
+            if (typeof sincronizarDatosGlobales === 'function') {
+                sincronizarDatosGlobales();
+            }
+        } else {
+            alert("Error al registrar movimiento: " + res.message);
+        }
+    })
+    .catch(err => {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        console.error("Error:", err);
+        alert("Error de conexión al guardar en Google Drive.");
     });
 }
