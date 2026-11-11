@@ -1,5 +1,5 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (ESTILO TANQUE / BATERÍA)
+// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (ESTILO BATERÍA / TANQUE DINÁMICO)
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
@@ -31,42 +31,55 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
                 const totalVendido = ventasPorCombustible[idComb] || 0;
                 const stockExacto = Math.max(0, stockBase - totalVendido);
 
-                // Capacidad máxima de referencia adaptada a tus tanques (ej: Gasolina ~6300, ACPM ~2300 o el stock base registrado)
+                // Definir capacidad máxima de referencia según el tipo de combustible
                 let capacidadMax = stockBase > 0 ? stockBase : 6300; 
-                if (idComb === 'C001') capacidadMax = 2300; // Tope estándar ACPM según ejemplo
-                if (idComb === 'C002') capacidadMax = 6300; // Tope estándar Gasolina según ejemplo
+                if (idComb === 'C001' || nombreComb.toLowerCase().includes('acpm')) {
+                    capacidadMax = 2300; // Tope estándar ACPM
+                } else if (idComb === 'C002' || nombreComb.toLowerCase().includes('gasolina')) {
+                    capacidadMax = 6300; // Tope estándar Gasolina
+                }
 
-                // Calcular porcentaje de llenado para la barra tipo batería/tanque
+                // Calcular porcentaje de la "batería" / tanque (cargado/descargado)
                 let porcentaje = (stockExacto / capacidadMax) * 100;
                 if (porcentaje > 100) porcentaje = 100;
                 if (porcentaje < 0) porcentaje = 0;
 
-                // Color dinámico de la barra según nivel (Verde > 40%, Amarillo 21-40%, Rojo <= 20%)
-                let colorBarra = "linear-gradient(90deg, #10b981, #059669)"; // Verde operativo
-                if (porcentaje <= 40 && porcentaje > 20) colorBarra = "linear-gradient(90deg, #f59e0b, #d97706)"; // Advertencia (Amarillo)
-                if (porcentaje <= 20) colorBarra = "linear-gradient(90deg, #ef4444, #dc2626)"; // Crítico (Rojo)
+                // Color dinámico de la carga de la batería (Verde > 40%, Amarillo 21-40%, Rojo <= 20%)
+                let colorCarga = "linear-gradient(90deg, #10b981, #059669)"; // Verde (Cargado / Nivel óptimo)
+                if (porcentaje <= 40 && porcentaje > 20) {
+                    colorCarga = "linear-gradient(90deg, #f59e0b, #d97706)"; // Amarillo (Medio)
+                } else if (porcentaje <= 20) {
+                    colorCarga = "linear-gradient(90deg, #ef4444, #dc2626)"; // Rojo (Descargando / Crítico)
+                }
 
-                // Renderizar tarjeta con diseño de barra de combustible / batería
+                // Renderizar diseño tipo batería de celular / tanque de combustible
                 const cardHTML = `
                     <div class="card" style="border-left: 5px solid #3b82f6; background: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                        <h3 style="margin-bottom: 10px; color: var(--primary);">⛽ ${nombreComb} (${idComb})</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="margin: 0; color: var(--primary);">🔋 ${nombreComb} (${idComb})</h3>
+                            <span style="font-size: 0.85rem; font-weight: bold; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; color: #475569;">
+                                ${porcentaje.toFixed(1)}% Cargado
+                            </span>
+                        </div>
+                        
                         <div class="card-body">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px;">
-                                <span>Nivel Actual:</span>
-                                <b>${stockExacto.toFixed(2)} Gal</b>
-                            </div>
-                            
-                            <!-- Barra Gráfica Tipo Batería / Tanque -->
-                            <div style="background: #e2e8f0; border-radius: 12px; height: 30px; position: relative; overflow: hidden; border: 2px solid #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);">
-                                <div style="width: ${porcentaje}%; background: ${colorBarra}; height: 100%; transition: width 0.6s ease-in-out; border-radius: 9px 0 0 9px;"></div>
-                                <span style="position: absolute; width: 100%; text-align: center; top: 4px; left: 0; font-weight: bold; font-size: 0.85rem; color: #0f172a; text-shadow: 0 1px 2px rgba(255,255,255,0.7);">
-                                    ${stockExacto.toFixed(0)} de ${capacidadMax.toLocaleString()} Gal (${porcentaje.toFixed(1)}%)
-                                </span>
+                            <!-- Contenedor Estilo Batería / Tanque -->
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                                <div style="flex: 1; background: #e2e8f0; border-radius: 8px; height: 32px; position: relative; overflow: hidden; border: 2px solid #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                    <!-- Nivel de carga animado -->
+                                    <div style="width: ${porcentaje}%; background: ${colorCarga}; height: 100%; transition: width 0.6s ease-in-out; border-radius: 6px 0 0 6px;"></div>
+                                    <!-- Texto central con formato exacto solicitado -->
+                                    <span style="position: absolute; width: 100%; text-align: center; top: 5px; left: 0; font-weight: bold; font-size: 0.85rem; color: #0f172a; text-shadow: 0 1px 2px rgba(255,255,255,0.7);">
+                                        ${stockExacto.toFixed(0)} de ${capacidadMax.toLocaleString()} Gal
+                                    </span>
+                                </div>
+                                <!-- Pin de la batería visual -->
+                                <div style="width: 6px; height: 14px; background: #cbd5e1; border-radius: 0 3px 3px 0;"></div>
                             </div>
 
-                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; margin-top: 8px;">
-                                <span>Vendido: ${totalVendido.toFixed(2)} Gal</span>
-                                <span>Capacidad Máx: ${capacidadMax.toLocaleString()} Gal</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; margin-top: 6px;">
+                                <span>Vendido (Descarga): <b>${totalVendido.toFixed(2)} Gal</b></span>
+                                <span>Capacidad Total: <b>${capacidadMax.toLocaleString()} Gal</b></span>
                             </div>
                         </div>
                     </div>
