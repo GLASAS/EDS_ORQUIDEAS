@@ -3,7 +3,7 @@
 // ==========================================
 
 // ⚠️ ASEGÚRATE DE PEGAR AQUÍ TU URL REAL DE GOOGLE APPS SCRIPT
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzQ7aiHWjjjKpC-G07mPpgHj3Zn67mY0bRAAOE1xyKcPqzCwcQYSF2YqGMWZY3gcqHx/exec"; 
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwTQ3BunU1MM6nU87Y75NmG0xEGUIYbb9pxG6nplhGtoMjIznaneh1-6sma2ibKaEpV/exec"; 
 
 function handleLogin(event) {
     event.preventDefault();
