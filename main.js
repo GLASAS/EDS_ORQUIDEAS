@@ -47,6 +47,11 @@ function sincronizarDatosGlobales() {
                 actualizarHistorialPreciosUI(data.historialPrecios);
             }
 
+            // 4. Inicializar módulo de Compras / Abastecimiento
+            if (typeof inicializarModuloCompras === 'function') {
+                inicializarModuloCompras(data.proveedores, data.productos);
+            }
+
         } else {
             console.error("Error al obtener datos:", data.message);
         }
