@@ -1,5 +1,5 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (ESTRICTAMENTE 2 TARJETAS: C001 Y C002)
+// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (ESTRICTAMENTE 2 CILINDROS: GASOLINA Y ACPM)
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
@@ -16,12 +16,11 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
         }
     }
 
-    // Acumuladores exclusivos para los dos únicos grupos: C001 y C002
+    // Estructuras exclusivas y fijas para los dos únicos tanques
     let datosC001 = { id: "C001", nombre: "ACPM", stockBase: 0, capacidadMax: 2300 };
     let datosC002 = { id: "C002", nombre: "Gasolina Corriente", stockBase: 0, capacidadMax: 6300 };
 
-    // 2. Agrupar todo el inventario sumando las cantidades de la hoja INVENTARIO_COMBUSTIBLE
-    // Columna C (índice 2) = CombustibleID (C001 o C002), Columna E (índice 4) = Cantidad/Stock
+    // 2. Sumar todo el inventario de la hoja agrupando por C001 y C002
     if (datosInventario && datosInventario.length > 1) {
         for (let j = 1; j < datosInventario.length; j++) {
             const idComb = String(datosInventario[j][2]).trim().toUpperCase();
@@ -35,12 +34,11 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
         }
     }
 
-    // Si no hay stock acumulado en la hoja, usar la capacidad por defecto como base
+    // Valores por defecto si la hoja está vacía en stock base
     if (datosC001.stockBase <= 0) datosC001.stockBase = datosC001.capacidadMax;
     if (datosC002.stockBase <= 0) datosC002.stockBase = datosC002.capacidadMax;
 
-    // Calcular ventas totales agrupadas para C001 y C002
-    // (Sumamos las ventas que correspondan al código exacto o que contengan la referencia)
+    // Calcular ventas agrupadas
     let vendidoC001 = 0;
     let vendidoC002 = 0;
 
@@ -53,53 +51,65 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
 
-    // Array estricto con los dos únicos tanques a mostrar
-    const tanquesAgrupados = [
+    // Array estricto con los dos únicos tanques unificados
+    const tanquesUnificados = [
         { ...datosC001, vendido: vendidoC001 },
         { ...datosC002, vendido: vendidoC002 }
     ];
 
-    tanquesAgrupados.forEach(tanque => {
+    tanquesUnificados.forEach(tanque => {
         const stockExacto = Math.max(0, tanque.stockBase - tanque.vendido);
         let porcentaje = (stockExacto / tanque.capacidadMax) * 100;
         if (porcentaje > 100) porcentaje = 100;
         if (porcentaje < 0) porcentaje = 0;
 
-        // Color dinámico de la barra según nivel
-        let colorBarra = "linear-gradient(90deg, #10b981, #059669)"; // Verde
-        if (porcentaje <= 40 && porcentaje > 20) {
-            colorBarra = "linear-gradient(90deg, #f59e0b, #d97706)"; // Amarillo
+        // Lógica de colores y alertas solicitada:
+        // - Amarillo exacto si está entre 2100 y 2500 galones
+        // - Rojo si es menor o igual al 20% o crítico
+        // - Verde si está óptimo
+        let colorNivel = "#10b981"; // Verde por defecto
+        let alertaTexto = "";
+
+        if (stockExacto >= 2100 && stockExacto <= 2500) {
+            colorNivel = "#f59e0b"; // Amarillo de alerta (rango solicitado)
+            alertaTexto = "⚠️ Revisar / Abastecer";
         } else if (porcentaje <= 20) {
-            colorBarra = "linear-gradient(90deg, #ef4444, #dc2626)"; // Rojo
+            colorNivel = "#ef4444"; // Rojo crítico
+            alertaTexto = "🚨 Nivel Crítico";
+        } else {
+            alertaTexto = "✅ Nivel Óptimo";
         }
 
         const cardHTML = `
-            <div class="card" style="border-left: 5px solid #3b82f6; background: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0; color: var(--primary);">⛽ ${tanque.nombre} (${tanque.id})</h3>
-                    <span style="font-size: 0.85rem; font-weight: bold; background: #f1f5f9; padding: 3px 8px; border-radius: 6px; color: #475569;">
+            <div class="card" style="border-top: 5px solid ${colorNivel}; background: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.06); margin-bottom: 20px; text-align: center; padding: 20px; border-radius: 12px;">
+                <!-- Pin superior del cilindro / batería -->
+                <div style="width: 40px; height: 10px; background: #64748b; margin: 0 auto 6px auto; border-radius: 4px 4px 0 0;"></div>
+                
+                <h3 style="margin: 0 0 2px 0; color: var(--primary); font-size: 1.15rem;">🛢️ ${tanque.nombre} (${tanque.id})</h3>
+                <span style="font-size: 0.75rem; font-weight: bold; color: ${colorNivel}; background: #f8fafc; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                    ${alertaTexto}
+                </span>
+
+                <!-- Cuerpo del Cilindro / Batería Vertical -->
+                <div style="background: #e2e8f0; border: 3px solid #cbd5e1; border-radius: 12px; height: 140px; width: 90px; margin: 15px auto; position: relative; overflow: hidden; box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);">
+                    <!-- Nivel de llenado dinámico desde abajo hacia arriba -->
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${porcentaje}%; background: ${colorNivel}; transition: height 0.6s ease-in-out;"></div>
+                    <!-- Líneas de referencia o marca de agua de porcentaje -->
+                    <span style="position: absolute; width: 100%; text-align: center; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 0.85rem; color: #0f172a; text-shadow: 0 1px 3px rgba(255,255,255,0.8);">
                         ${porcentaje.toFixed(1)}%
                     </span>
                 </div>
-                
-                <div class="card-body">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; color: #475569;">
-                        <span>Nivel Actual:</span>
-                        <b>${stockExacto.toFixed(2)} Gal</b>
-                    </div>
-                    
-                    <!-- Barra de Nivel Limpia -->
-                    <div style="background: #e2e8f0; border-radius: 8px; height: 28px; position: relative; overflow: hidden; border: 2px solid #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 10px;">
-                        <div style="width: ${porcentaje}%; background: ${colorBarra}; height: 100%; transition: width 0.6s ease-in-out; border-radius: 6px 0 0 6px;"></div>
-                        <span style="position: absolute; width: 100%; text-align: center; top: 3px; left: 0; font-weight: bold; font-size: 0.85rem; color: #0f172a; text-shadow: 0 1px 2px rgba(255,255,255,0.7);">
-                            ${stockExacto.toFixed(0)} de ${tanque.capacidadMax.toLocaleString()} Gal
-                        </span>
-                    </div>
 
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b;">
-                        <span>Vendido: <b>${tanque.vendido.toFixed(2)} Gal</b></span>
-                        <span>Capacidad Máx: <b>${tanque.capacidadMax.toLocaleString()} Gal</b></span>
-                    </div>
+                <!-- Cantidad Exacta -->
+                <div style="margin-top: 8px;">
+                    <span style="font-size: 1.1rem; font-weight: bold; color: #0f172a;">
+                        ${stockExacto.toFixed(0)} <span style="font-size: 0.85rem; color: #64748b;">de ${tanque.capacidadMax.toLocaleString()} Gal</span>
+                    </span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; margin-top: 12px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                    <span>Vendido: <b>${tanque.vendido.toFixed(1)} Gal</b></span>
+                    <span>Capacidad: <b>${tanque.capacidadMax.toLocaleString()} Gal</b></span>
                 </div>
             </div>
         `;
