@@ -1,5 +1,5 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (CILINDRO VERTICAL TIPO BOTELLA)
+// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (GASOLINA PRIMERO, CILINDRO TIPO BOTELLA Y ALERTAS)
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
@@ -49,12 +49,13 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
 
-    // Forzar diseño de contenedor horizontal flexible para los dos cilindros
+    // Forzar contenedor horizontal flexible de dos columnas
     contenedorCards.style.cssText = "display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: flex-start;";
 
+    // ORDEN INVERTIDO: GASOLINA DE PRIMERAS (C002) Y ACPM DESPUÉS (C001)
     const tanquesUnificados = [
-        { ...datosC001, vendido: vendidoC001 },
-        { ...datosC002, vendido: vendidoC002 }
+        { ...datosC002, vendido: vendidoC002 },
+        { ...datosC001, vendido: vendidoC001 }
     ];
 
     tanquesUnificados.forEach(tanque => {
@@ -68,21 +69,21 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
 
         // Reglas de alerta específicas solicitadas:
         if (tanque.id === "C002") {
-            // GASOLINA (Máx 6300)
+            // GASOLINA (Máx 6300): Amarillo entre 1000 y 2500, Rojo < 1000
             if (stockExacto < 1000) {
-                colorNivel = "#ef4444"; // Rojo si es menor a 1000
+                colorNivel = "#ef4444"; 
                 alertaTexto = "🚨 Reserva Crítica";
             } else if (stockExacto >= 1000 && stockExacto <= 2500) {
-                colorNivel = "#f59e0b"; // Amarillo si está entre 1000 y 2500
+                colorNivel = "#f59e0b"; 
                 alertaTexto = "⚠️ Zona de Abastecimiento";
             }
         } else if (tanque.id === "C001") {
-            // ACPM (Máx 2300)
+            // ACPM (Máx 2300): Amarillo entre 600 y 1200, Rojo < 600
             if (stockExacto < 600) {
-                colorNivel = "#ef4444"; // Rojo si es menor a 600
+                colorNivel = "#ef4444"; 
                 alertaTexto = "🚨 Reserva Crítica";
             } else if (stockExacto >= 600 && stockExacto <= 1200) {
-                colorNivel = "#f59e0b"; // Amarillo si está entre 600 y 1200
+                colorNivel = "#f59e0b"; 
                 alertaTexto = "⚠️ Zona de Abastecimiento";
             }
         }
