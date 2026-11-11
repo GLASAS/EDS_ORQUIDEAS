@@ -19,17 +19,28 @@ function mostrarIndicadorCarga(mostrar) {
 
 function sincronizarDatosGlobales() {
     mostrarIndicadorCarga(true);
-    google.script.run
-        .withSuccessHandler(function(data) {
-            mostrarIndicadorCarga(false);
-            // data debe contener tanto el inventario como las ventas para calcular niveles exactos
-            if (data && data.inventario && data.ventas) {
-                actualizarNivelesTanquesUI(data.inventario, data.ventas);
-            }
-        })
-        .withFailureHandler(err => {
-            mostrarIndicadorCarga(false);
-            console.error("Error sincronizando:", err);
-        })
-        .obtenerDatosGlobalesBackend();
+
+    fetch(URL_WEB_APP, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ accion: "obtenerDatosGlobales" })
+    })
+    .then(response => response.json())
+    .then(data => {
+        mostrarIndicadorCarga(false);
+        if (data && data.success) {
+            cacheDatosGlobales = data;
+            // Actualizar resumen de ventas en dashboard
+            procesarResumenVentasDashboard(data.ventas);
+            // Actualizar niveles exactos de tanques
+            actualizarNivelesTanquesUI(data.inventario, data.ventas);
+        } else {
+            console.error("Error al obtener datos:", data.message);
+        }
+    })
+    .catch(error => {
+        mostrarIndicadorCarga(false);
+        console.error("Error de red en sincronización:", error);
+    });
 }
