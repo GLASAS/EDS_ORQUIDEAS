@@ -1,11 +1,10 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (BOTELLAS, ALERTAS Y MOVIMIENTOS)
+// MÓDULO: INVENTARIO, NIVELES Y PRECIOS DE COMBUSTIBLE
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     const ventasPorCombustible = {};
     
-    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)[cite: 6]
     if (datosVentas && datosVentas.length > 1) {
         for (let i = 1; i < datosVentas.length; i++) {
             const combustibleId = String(datosVentas[i][3]).trim().toUpperCase();
@@ -16,11 +15,9 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
         }
     }
 
-    // Estructuras fijas unificadas para los dos tanques
     let datosC001 = { id: "C001", nombre: "ACPM", stockBase: 0, capacidadMax: 2300 };
     let datosC002 = { id: "C002", nombre: "Gasolina Corriente", stockBase: 0, capacidadMax: 6300 };
 
-    // 2. Sumar el inventario agrupando estrictamente por C001 y C002[cite: 5]
     if (datosInventario && datosInventario.length > 1) {
         for (let j = 1; j < datosInventario.length; j++) {
             const idComb = String(datosInventario[j][2]).trim().toUpperCase();
@@ -48,11 +45,8 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     const contenedorCards = document.getElementById('dashboard-cards');
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
-
-    // Forzar contenedor horizontal flexible centrado
     contenedorCards.style.cssText = "display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: flex-start;";
 
-    // ORDEN ESTRICTO: GASOLINA DE PRIMERAS (C002) Y ACPM DESPUÉS (C001)
     const tanquesUnificados = [
         { ...datosC002, vendido: vendidoC002 },
         { ...datosC001, vendido: vendidoC001 }
@@ -64,12 +58,10 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
         if (porcentaje > 100) porcentaje = 100;
         if (porcentaje < 0) porcentaje = 0;
 
-        let colorNivel = "#10b981"; // Verde por defecto
+        let colorNivel = "#10b981";
         let alertaTexto = "✅ Nivel Óptimo";
 
-        // Reglas de alerta específicas solicitadas:
         if (tanque.id === "C002") {
-            // GASOLINA (Máx 6300): Amarillo entre 1000 y 2500, Rojo < 1000
             if (stockExacto < 1000) {
                 colorNivel = "#ef4444"; 
                 alertaTexto = "🚨 Reserva Crítica";
@@ -78,7 +70,6 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
                 alertaTexto = "⚠️ Zona de Abastecimiento";
             }
         } else if (tanque.id === "C001") {
-            // ACPM (Máx 2300): Amarillo entre 600 y 1200, Rojo < 600
             if (stockExacto < 600) {
                 colorNivel = "#ef4444"; 
                 alertaTexto = "🚨 Reserva Crítica";
@@ -90,49 +81,26 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
 
         const cardHTML = `
             <div style="background: #ffffff; border-top: 6px solid ${colorNivel}; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 25px; width: 260px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                
                 <h3 style="margin: 0 0 2px 0; color: #1e293b; font-size: 1.2rem; font-weight: 700;">🛢️ ${tanque.nombre}</h3>
                 <span style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px; font-weight: 600;">(${tanque.id})</span>
-
-                <!-- CILINDRO / BOTELLA VERTICAL -->
                 <div style="position: relative; width: 85px; height: 180px; background: #f1f5f9; border: 4px solid #334155; border-radius: 12px 12px 18px 18px; overflow: hidden; box-shadow: inset 0 5px 15px rgba(0,0,0,0.15); margin: 5px 0 15px 0;">
-                    
-                    <!-- Tapa de botella superior -->
                     <div style="position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 28px; height: 8px; background: #1e293b; border-radius: 3px; z-index: 3;"></div>
-
-                    <!-- Líquido interior vertical (sube desde abajo) -->
                     <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${porcentaje}%; background: ${colorNivel}; transition: height 0.7s ease-in-out; opacity: 0.9;">
-                        <!-- Brillo longitudinal -->
                         <div style="position: absolute; top: 0; left: 8px; width: 6px; height: 100%; background: rgba(255,255,255,0.35); border-radius: 3px;"></div>
                     </div>
-
-                    <!-- Porcentaje en el centro -->
                     <div style="position: absolute; width: 100%; top: 50%; transform: translateY(-50%); text-align: center; z-index: 2;">
-                        <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
-                            ${porcentaje.toFixed(1)}%
-                        </span>
+                        <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">${porcentaje.toFixed(1)}%</span>
                     </div>
                 </div>
-
-                <!-- Estado de Alerta -->
                 <div style="margin-bottom: 10px;">
-                    <span style="font-size: 0.75rem; font-weight: bold; color: ${colorNivel}; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        ${alertaTexto}
-                    </span>
+                    <span style="font-size: 0.75rem; font-weight: bold; color: ${colorNivel}; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">${alertaTexto}</span>
                 </div>
-
-                <!-- Cantidad Actual en Galones -->
                 <div style="margin-bottom: 10px;">
-                    <span style="font-size: 1.2rem; font-weight: bold; color: #0f172a;">
-                        ${stockExacto.toFixed(0)} <span style="font-size: 0.85rem; color: #64748b;">Galones</span>
-                    </span>
+                    <span style="font-size: 1.2rem; font-weight: bold; color: #0f172a;">${stockExacto.toFixed(0)} <span style="font-size: 0.85rem; color: #64748b;">Galones</span></span>
                 </div>
-
-                <!-- Únicamente muestra la capacidad total al final -->
                 <div style="width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 5px; font-size: 0.8rem; color: #64748b;">
                     Capacidad Total: <b>${tanque.capacidadMax.toLocaleString()} Gal</b>
                 </div>
-
             </div>
         `;
         contenedorCards.innerHTML += cardHTML;
@@ -140,7 +108,89 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
 }
 
 // ==========================================
-// MANEJADOR DE MOVIMIENTO EXTRAORDINARIO (REGISTRO EN GOOGLE DRIVE)
+// RENDERIZAR TABLA DE HISTORIAL DE PRECIOS
+// ==========================================
+function actualizarHistorialPreciosUI(datosHistorial) {
+    const tbody = document.querySelector('#tabla-historial-precios tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!datosHistorial || datosHistorial.length <= 1) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">No hay registros de cambios de precios.</td></tr>`;
+        return;
+    }
+
+    // Recorrer desde el final (más reciente primero)
+    for (let i = datosHistorial.length - 1; i >= 1; i--) {
+        const fila = datosHistorial[i];
+        if (!fila[0]) continue;
+
+        const fechaHora = fila[0];
+        const combustibleNombre = fila[2] || fila[1];
+        const precioAnterior = parseFloat(fila[3]) || 0;
+        const precioNuevo = parseFloat(fila[4]) || 0;
+        const usuario = fila[5] || "Sistema";
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${fechaHora}</td>
+            <td><b>${combustibleNombre}</b></td>
+            <td>$${precioAnterior.toLocaleString()}</td>
+            <td style="color: #10b981; font-weight: bold;">$${precioNuevo.toLocaleString()}</td>
+            <td>${usuario}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+// ==========================================
+// MANEJADOR PARA ACTUALIZAR PRECIOS
+// ==========================================
+function handleActualizarPrecio(event) {
+    event.preventDefault();
+
+    const combustibleId = document.getElementById('precio-combustible-id').value;
+    const nuevoPrecio = parseFloat(document.getElementById('precio-nuevo-valor').value);
+
+    const datosPrecio = {
+        combustibleId: combustibleId,
+        nuevoPrecio: nuevoPrecio,
+        usuario: (typeof usuarioLogueado !== 'undefined' ? usuarioLogueado : "Carlos Corredor Zapata")
+    };
+
+    if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
+
+    const urlDestino = typeof URL_WEB_APP !== 'undefined' ? URL_WEB_APP : (window.URL_WEB_APP || "");
+
+    fetch(urlDestino, {
+        method: "POST",
+        body: JSON.stringify({
+            accion: "actualizarPrecio",
+            datosPrecio: datosPrecio
+        })
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        if (res.success) {
+            alert("¡Precio actualizado y registrado en el historial con éxito!");
+            document.getElementById('form-actualizar-precio').reset();
+            if (typeof sincronizarDatosGlobales === 'function') {
+                sincronizarDatosGlobales();
+            }
+        } else {
+            alert("Error al actualizar precio: " + res.message);
+        }
+    })
+    .catch(err => {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        console.error("Error:", err);
+        alert("Error de conexión al guardar el nuevo precio.");
+    });
+}
+
+// ==========================================
+// MANEJADOR DE MOVIMIENTO EXTRAORDINARIO
 // ==========================================
 function handleMovimiento(event) {
     event.preventDefault();
@@ -155,12 +205,6 @@ function handleMovimiento(event) {
     if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
 
     const urlDestino = typeof URL_WEB_APP !== 'undefined' ? URL_WEB_APP : (window.URL_WEB_APP || "");
-    
-    if (!urlDestino) {
-        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
-        alert("Error crítico: La URL de la Web App (URL_WEB_APP) no está configurada en el sistema.");
-        return;
-    }
 
     fetch(urlDestino, {
         method: "POST",
@@ -184,7 +228,7 @@ function handleMovimiento(event) {
     })
     .catch(err => {
         if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
-        console.error("Error detallado:", err);
+        console.error("Error:", err);
         alert("Error de conexión al intentar guardar en Google Drive.");
     });
 }
