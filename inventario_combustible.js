@@ -5,7 +5,7 @@
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     const ventasPorCombustible = {};
     
-    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)
+    // 1. Acumular ventas totales por ID (Columna D -> índice 3, Galid Columna E -> índice 4)[cite: 6]
     if (datosVentas && datosVentas.length > 1) {
         for (let i = 1; i < datosVentas.length; i++) {
             const combustibleId = String(datosVentas[i][3]).trim().toUpperCase();
@@ -20,7 +20,7 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     let datosC001 = { id: "C001", nombre: "ACPM", stockBase: 0, capacidadMax: 2300 };
     let datosC002 = { id: "C002", nombre: "Gasolina Corriente", stockBase: 0, capacidadMax: 6300 };
 
-    // 2. Sumar el inventario agrupando estrictamente por C001 y C002
+    // 2. Sumar el inventario agrupando estrictamente por C001 y C002[cite: 5]
     if (datosInventario && datosInventario.length > 1) {
         for (let j = 1; j < datosInventario.length; j++) {
             const idComb = String(datosInventario[j][2]).trim().toUpperCase();
@@ -154,7 +154,6 @@ function handleMovimiento(event) {
 
     if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
 
-    // Validar si la URL de la Web App está definida globalmente (en main.js o auth.js)
     const urlDestino = typeof URL_WEB_APP !== 'undefined' ? URL_WEB_APP : (window.URL_WEB_APP || "");
     
     if (!urlDestino) {
