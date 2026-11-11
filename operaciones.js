@@ -1,45 +1,51 @@
 // ==========================================
-// MÓDULO: OPERACIONES (GASTOS Y CXP)
+// GESTIÓN DE CREACIÓN DE USUARIOS
 // ==========================================
 
-function handleGasto(event) {
+function handleCrearUsuario(event) {
     event.preventDefault();
-    const datosGasto = {
-        categoria: document.getElementById('gasto-categoria').value,
-        descripcion: document.getElementById('gasto-desc').value,
-        valor: parseFloat(document.getElementById('gasto-valor').value),
-        formaPago: document.getElementById('gasto-pago').value,
-        responsable: document.getElementById('gasto-resp').value,
-        soporte: document.getElementById('gasto-soporte').value
+
+    const nombre = document.getElementById('nuevo-nombre').value;
+    const cedula = document.getElementById('nuevo-cedula').value;
+    const password = document.getElementById('nuevo-pass').value;
+    const fechaExpedicion = document.getElementById('nuevo-fecha-exp').value;
+    const rol = document.getElementById('nuevo-rol').value;
+
+    const datosUsuario = {
+        nombre,
+        cedula,
+        password,
+        fechaExpedicion,
+        rol
     };
 
-    google.script.run
-        .withSuccessHandler(res => {
-            if (res.success) {
-                alert("Gasto registrado con éxito.");
-                document.getElementById('form-gasto').reset();
+    if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(true);
+
+    const urlDestino = typeof URL_WEB_APP !== 'undefined' ? URL_WEB_APP : (window.URL_WEB_APP || "");
+
+    fetch(urlDestino, {
+        method: "POST",
+        body: JSON.stringify({
+            accion: "crearUsuario",
+            datosUsuario: datosUsuario
+        })
+    })
+    .then(response => response.json())
+    .then(res => {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        if (res.success) {
+            alert("¡Usuario creado y registrado en Google Drive con éxito!");
+            document.getElementById('form-nuevo-usuario').reset();
+            if (typeof sincronizarDatosGlobales === 'function') {
                 sincronizarDatosGlobales();
             }
-        })
-        .registrarGastoBackend(datosGasto);
-}
-
-function handleRegistrarCuenta(event) {
-    event.preventDefault();
-    const cxp = {
-        tercero: document.getElementById('cxp-tercero').value,
-        concepto: document.getElementById('cxp-concepto').value,
-        valor: parseFloat(document.getElementById('cxp-valor').value),
-        fechaLimite: document.getElementById('cxp-fecha').value
-    };
-
-    google.script.run
-        .withSuccessHandler(res => {
-            if (res.success) {
-                alert("Cuenta por pagar registrada.");
-                document.getElementById('form-cxp').reset();
-                sincronizarDatosGlobales();
-            }
-        })
-        .registrarCxpBackend(cxp);
+        } else {
+            alert("Error al crear usuario: " + res.message);
+        }
+    })
+    .catch(err => {
+        if (typeof mostrarIndicadorCarga === 'function') mostrarIndicadorCarga(false);
+        console.error("Error:", err);
+        alert("Error de conexión al intentar guardar el usuario.");
+    });
 }
