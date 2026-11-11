@@ -2,7 +2,7 @@
 // MÓDULO: AUTENTICACIÓN Y SESIONES (GITHUB PAGES)
 // ==========================================
 
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwgYLrALuB6RSj7na6pLADE7Q-pkelY4LNL6ekH6avlhxqBkbp3DzZqxP4u8wWNsHIp/exec"; 
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbwyzMIB9zFzhE4g14jbeRw8XiONAL_TQPhGv11JuL99u8ZS6XEm7hFLwHFEfW0HIKbW/exec"; 
 
 function handleLogin(event) {
     event.preventDefault();
