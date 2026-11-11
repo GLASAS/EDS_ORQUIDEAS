@@ -9,12 +9,7 @@ function handleVenta(event) {
     const medioPago = document.getElementById('venta-mediopago').value;
     const obs = document.getElementById('venta-obs').value;
 
-    const datosVenta = {
-        surtidor: surtidor,
-        galones: galones,
-        medioPago: medioPago,
-        observaciones: obs
-    };
+    const datosVenta = { surtidor, galones, medioPago, observaciones: obs };
 
     mostrarIndicadorCarga(true);
     google.script.run
