@@ -2,22 +2,26 @@
 // MÓDULO: AUTENTICACIÓN Y SESIONES (GITHUB PAGES)
 // ==========================================
 
-// REEMPLAZA ESTA URL CON TU URL DE IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
-const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzQ7aiHWjjjKpC-G07mPpgHj3Zn67mY0bRAAOE1xyKcPqzCwcQYSF2YqGMWZY3gcqHx/exec";
+// ⚠️ ASEGÚRATE DE PEGAR AQUÍ TU URL REAL DE GOOGLE APPS SCRIPT
+const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbzQ7aiHWjjjKpC-G07mPpgHj3Zn67mY0bRAAOE1xyKcPqzCwcQYSF2YqGMWZY3gcqHx/exec"; 
 
 function handleLogin(event) {
     event.preventDefault();
     const cedula = document.getElementById('login-cedula').value.trim();
     const password = document.getElementById('login-password').value.trim();
     
+    if (URL_WEB_APP.includes("AQUÍ_PEGA")) {
+        alert("Por favor configure su URL de Apps Script real en el archivo auth.js");
+        return;
+    }
+
     mostrarIndicadorCarga(true);
 
-    // Conexión mediante Fetch API hacia Google Apps Script Web App
     fetch(URL_WEB_APP, {
         method: "POST",
-        mode: "cors", // O 'no-cors' si el servidor redirige, pero idealmente CORS configurado
+        mode: "cors",
         headers: {
-            "Content-Type": "text/plain;charset=utf-8" // Usar text/plain evita bloqueos CORS preflight en Apps Script
+            "Content-Type": "text/plain;charset=utf-8"
         },
         body: JSON.stringify({
             accion: "login",
@@ -25,7 +29,10 @@ function handleLogin(event) {
             password: password
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error("Error HTTP: " + response.status);
+        return response.json();
+    })
     .then(respuesta => {
         mostrarIndicadorCarga(false);
         if (respuesta.success) {
@@ -41,8 +48,8 @@ function handleLogin(event) {
     })
     .catch(error => {
         mostrarIndicadorCarga(false);
-        console.error("Error de red:", error);
-        alert("Error de conexión con el servidor. Verifique la URL de Apps Script.");
+        console.error("Error detallado:", error);
+        alert("Error de conexión con el servidor. Verifique que la URL de Apps Script sea correcta y la implementación esté actualizada.");
     });
 }
 
