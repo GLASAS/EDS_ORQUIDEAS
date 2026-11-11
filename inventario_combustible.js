@@ -1,5 +1,5 @@
 // ==========================================
-// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (CILINDRO TIPO BOTELLA Y REGLAS DE ALERTA)
+// MÓDULO: INVENTARIO Y NIVELES DE COMBUSTIBLE (CILINDRO VERTICAL TIPO BOTELLA)
 // ==========================================
 
 function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
@@ -49,15 +49,13 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
     if (!contenedorCards) return;
     contenedorCards.innerHTML = '';
 
+    // Forzar diseño de contenedor horizontal flexible para los dos cilindros
+    contenedorCards.style.cssText = "display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; align-items: flex-start;";
+
     const tanquesUnificados = [
         { ...datosC001, vendido: vendidoC001 },
         { ...datosC002, vendido: vendidoC002 }
     ];
-
-    // Configurar contenedor en cuadrícula moderna de 2 columnas
-    contenedorCards.style.display = "grid";
-    contenedorCards.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
-    contenedorCards.style.gap = "20px";
 
     tanquesUnificados.forEach(tanque => {
         const stockExacto = Math.max(0, tanque.stockBase - tanque.vendido);
@@ -68,70 +66,70 @@ function actualizarNivelesTanquesUI(datosInventario, datosVentas) {
         let colorNivel = "#10b981"; // Verde por defecto
         let alertaTexto = "✅ Nivel Óptimo";
 
-        // Reglas de colores solicitadas por combustible:
+        // Reglas de alerta específicas solicitadas:
         if (tanque.id === "C002") {
             // GASOLINA (Máx 6300)
             if (stockExacto < 1000) {
-                colorNivel = "#ef4444"; // Rojo (< 1000)
+                colorNivel = "#ef4444"; // Rojo si es menor a 1000
                 alertaTexto = "🚨 Reserva Crítica";
             } else if (stockExacto >= 1000 && stockExacto <= 2500) {
-                colorNivel = "#f59e0b"; // Amarillo (1000 a 2500)
-                alertaTexto = "⚠️ Revisar / Abastecer";
+                colorNivel = "#f59e0b"; // Amarillo si está entre 1000 y 2500
+                alertaTexto = "⚠️ Zona de Abastecimiento";
             }
         } else if (tanque.id === "C001") {
             // ACPM (Máx 2300)
             if (stockExacto < 600) {
-                colorNivel = "#ef4444"; // Rojo (< 600)
+                colorNivel = "#ef4444"; // Rojo si es menor a 600
                 alertaTexto = "🚨 Reserva Crítica";
             } else if (stockExacto >= 600 && stockExacto <= 1200) {
-                colorNivel = "#f59e0b"; // Amarillo (600 a 1200)
-                alertaTexto = "⚠️ Revisar / Abastecer";
+                colorNivel = "#f59e0b"; // Amarillo si está entre 600 y 1200
+                alertaTexto = "⚠️ Zona de Abastecimiento";
             }
         }
 
         const cardHTML = `
-            <div class="card" style="border-top: 6px solid ${colorNivel}; background: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.08); text-align: center; padding: 22px; border-radius: 14px; display: flex; flex-direction: column; align-items: center;">
+            <div style="background: #ffffff; border-top: 6px solid ${colorNivel}; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 25px; width: 260px; text-align: center; display: flex; flex-direction: column; align-items: center;">
                 
-                <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 1.15rem;">🛢️ ${tanque.nombre}</h3>
-                <span style="font-size: 0.75rem; font-weight: bold; color: #64748b; margin-bottom: 12px;">(${tanque.id})</span>
+                <h3 style="margin: 0 0 2px 0; color: #1e293b; font-size: 1.2rem; font-weight: 700;">🛢️ ${tanque.nombre}</h3>
+                <span style="font-size: 0.8rem; color: #64748b; margin-bottom: 15px; font-weight: 600;">(${tanque.id})</span>
 
                 <!-- CILINDRO / BOTELLA VERTICAL -->
-                <div style="position: relative; width: 90px; height: 160px; background: #f1f5f9; border: 3px solid #475569; border-radius: 12px 12px 16px 16px; overflow: hidden; box-shadow: inset 0 4px 10px rgba(0,0,0,0.15); margin: 5px 0;">
+                <div style="position: relative; width: 85px; height: 180px; background: #f1f5f9; border: 4px solid #334155; border-radius: 12px 12px 18px 18px; overflow: hidden; box-shadow: inset 0 5px 15px rgba(0,0,0,0.15); margin: 5px 0 15px 0;">
                     
-                    <!-- Tapa / Cuello de la botella -->
-                    <div style="position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 30px; height: 8px; background: #334155; border-radius: 3px; z-index: 3;"></div>
+                    <!-- Tapa de botella superior -->
+                    <div style="position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 28px; height: 8px; background: #1e293b; border-radius: 3px; z-index: 3;"></div>
 
-                    <!-- Nivel de líquido dentro de la botella (sube desde abajo) -->
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${porcentaje}%; background: ${colorNivel}; transition: height 0.7s ease-in-out; opacity: 0.92;">
-                        <!-- Brillo interior -->
+                    <!-- Líquido interior vertical (sube desde abajo) -->
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${porcentaje}%; background: ${colorNivel}; transition: height 0.7s ease-in-out; opacity: 0.9;">
+                        <!-- Brillo longitudinal -->
                         <div style="position: absolute; top: 0; left: 8px; width: 6px; height: 100%; background: rgba(255,255,255,0.35); border-radius: 3px;"></div>
                     </div>
 
                     <!-- Porcentaje en el centro -->
                     <div style="position: absolute; width: 100%; top: 50%; transform: translateY(-50%); text-align: center; z-index: 2;">
-                        <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a; background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
                             ${porcentaje.toFixed(1)}%
                         </span>
                     </div>
                 </div>
 
                 <!-- Estado de Alerta -->
-                <div style="margin: 8px 0 4px 0;">
-                    <span style="font-size: 0.75rem; font-weight: bold; color: ${colorNivel}; background: #f8fafc; padding: 3px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <div style="margin-bottom: 10px;">
+                    <span style="font-size: 0.75rem; font-weight: bold; color: ${colorNivel}; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
                         ${alertaTexto}
                     </span>
                 </div>
 
-                <!-- Cantidad Actual Exacta -->
-                <div style="margin: 6px 0;">
-                    <span style="font-size: 1.15rem; font-weight: bold; color: #0f172a;">
+                <!-- Cantidad Actual en Galones -->
+                <div style="margin-bottom: 10px;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: #0f172a;">
                         ${stockExacto.toFixed(0)} <span style="font-size: 0.85rem; color: #64748b;">Galones</span>
                     </span>
                 </div>
 
-                <!-- Pie de tarjeta: ÚNICAMENTE MUESTRA LA CAPACIDAD MÁXIMA -->
-                <div style="width: 100%; display: flex; justify-content: center; font-size: 0.8rem; color: #64748b; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                    <span>Capacidad Total: <b>${tanque.capacidadMax.toLocaleString()} Gal</b></span>
+                <!-- Únicamente muestra la capacidad total al final -->
+                <div style="width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 5px; font-size: 0.8rem; color: #64748b;">
+                    Capacidad Total: <b>${tanque.capacidadMax.toLocaleString()} Gal</b>
                 </div>
 
             </div>
